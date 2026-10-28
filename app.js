@@ -140,7 +140,68 @@ async function showApprovals() {
     const status = document.createElement('p');
     status.textContent = '상태: 승인 대기';
 
-    item.append(name, role, status);
+       const buttons = document.createElement('div');
+    buttons.className = 'actions';
+    buttons.style.marginTop = '15px';
+
+    const approveButton = document.createElement('button');
+    approveButton.className = 'btn';
+    approveButton.textContent = '가입 승인';
+    approveButton.type = 'button';
+        approveButton.onclick = async () => {
+      if (!confirm(`${student.display_name} 학생의 가입을 승인할까요?`)) {
+        return;
+      }
+
+      approveButton.disabled = true;
+
+      const { data, error } = await db
+        .from('profiles')
+        .update({ approval_status: 'approved' })
+        .eq('id', student.id)
+        .eq('approval_status', 'pending')
+        .select('id');
+
+      if (error || !data || data.length !== 1) {
+        alert('승인에 실패했습니다. 관리자 권한을 확인해 주세요.');
+        approveButton.disabled = false;
+        return;
+      }
+
+      alert('가입 승인이 완료되었습니다.');
+      showApprovals();
+    };
+
+    const rejectButton = document.createElement('button');
+    rejectButton.className = 'btn secondary';
+    rejectButton.textContent = '가입 거절';
+    rejectButton.type = 'button';
+    rejectButton.onclick = async () => {
+  if (!confirm(`${student.display_name} 학생의 가입을 거절할까요?`)) {
+    return;
+  }
+
+  rejectButton.disabled = true;
+
+  const { data, error } = await db
+    .from('profiles')
+    .update({ approval_status: 'rejected' })
+    .eq('id', student.id)
+    .eq('approval_status', 'pending')
+    .select('id');
+
+  if (error || !data || data.length !== 1) {
+    alert('거절 처리에 실패했습니다. 관리자 권한을 확인해 주세요.');
+    rejectButton.disabled = false;
+    return;
+  }
+
+  alert('가입 신청을 거절했습니다.');
+  showApprovals();
+};
+
+    buttons.append(approveButton, rejectButton);
+    item.append(name, role, status, buttons);
     list.appendChild(item);
   });
 }
