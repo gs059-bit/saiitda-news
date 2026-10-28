@@ -41,12 +41,12 @@ function showStudentSignup() {
         </div>
 
         <div class="field">
-          <label for="studentPenName">필명</label>
+          <label for="studentPenName">이</label>
           <input
             id="studentPenName"
             type="text"
             maxlength="20"
-            placeholder="기사나 댓글에 표시할 이름"
+            placeholder="이름을 입력하세요"
             required
           >
         </div>
