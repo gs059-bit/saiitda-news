@@ -33,12 +33,28 @@ async function save(status){const title=$('#title').value.trim(),summary=$('#sum
 function categoryEditor(){if(!isAdmin())return;$('#workspace').innerHTML=`<h2>카테고리 관리</h2><p class="muted">한 줄에 하나씩 카테고리를 입력하세요. 기존 기사에서 사용 중인 카테고리를 삭제하면 해당 기사는 예전 분류로 남을 수 있습니다.</p><div class="field"><label for="cats">카테고리 목록</label><textarea id="cats">${esc(categories.join('\n'))}</textarea></div><button class="btn" id="saveCats">저장</button><div id="catmsg"></div>`;$('#saveCats').onclick=async()=>{let names=[...new Set($('#cats').value.split('\n').map(x=>x.trim()).filter(Boolean))];if(!names.length||names.some(x=>x.length>40)){ $('#catmsg').innerHTML=notice('카테고리를 1~40자로 입력해 주세요.',true);return}let {error}=await db.from('categories').delete().neq('name','__never__');if(!error)({error}=await db.from('categories').insert(names.map((name,i)=>({name,sort_order:i}))));if(error){$('#catmsg').innerHTML=notice(errorText(error),true);return}categories=names;nav();$('#catmsg').innerHTML=notice('카테고리를 저장했습니다.')}}
 function designEditor(){if(!isAdmin())return;const x=siteSettings;$('#workspace').innerHTML=`<h2>사이트 디자인 설정</h2><p class="muted">선생님만 수정할 수 있어요. 미리보기 후 저장하면 모든 방문자에게 적용됩니다.</p><form id="designForm"><div class="field"><label for="siteTitle">신문 이름 (브라우저 제목)</label><input id="siteTitle" maxlength="50" value="${esc(x.site_title)}"></div><div class="field"><label for="siteTagline">로고 아래 소개 문구</label><input id="siteTagline" maxlength="120" value="${esc(x.tagline)}"></div><div class="field"><label for="accent">강조 색상</label><input id="accent" type="color" value="${esc(x.accent)}" style="height:48px;width:110px"></div><div class="field"><label for="logoWidth">로고 크기: <output id="logoSize">${Number(x.logo_width)}</output>px</label><input id="logoWidth" type="range" min="220" max="700" step="10" value="${Number(x.logo_width)}"></div><div class="field"><label for="fontChoice">기사 제목 글꼴</label><select id="fontChoice"><option value="classic" ${x.font==='classic'?'selected':''}>정통 신문 스타일</option><option value="modern" ${x.font==='modern'?'selected':''}>현대적 뉴스 스타일</option></select></div><div class="field"><label for="layoutChoice">기사 목록 배치</label><select id="layoutChoice"><option value="grid" ${x.layout==='grid'?'selected':''}>사진 카드형 (3열)</option><option value="list" ${x.layout==='list'?'selected':''}>기사 목록형 (1열)</option></select></div><div class="field"><label for="featured">메인 대표 기사 (전체기사에서는 최신 발행 기사 자동 표시)</label><select id="featured"><option value="">최신 발행 기사 자동 선택</option>${published().map(a=>`<option value="${esc(a.id)}" ${x.featured_id===a.id?'selected':''}>${esc(a.title)}</option>`).join('')}</select></div><div class="actions"><button type="button" class="btn secondary" id="previewDesign">미리보기</button><button type="submit" class="btn">디자인 저장</button><button type="button" class="btn secondary" id="resetDesign">변경 취소</button></div><div id="designMsg"></div></form>`;const read=()=>({site_title:$('#siteTitle').value.trim().slice(0,50)||'사이잇다',tagline:$('#siteTagline').value.trim().slice(0,120),accent:$('#accent').value,logo_width:Number($('#logoWidth').value),font:$('#fontChoice').value,layout:$('#layoutChoice').value,featured_id:$('#featured').value||null});$('#logoWidth').oninput=()=>{$('#logoSize').textContent=$('#logoWidth').value};$('#previewDesign').onclick=()=>{siteSettings={...siteSettings,...read()};applySettings();$('#designMsg').innerHTML=notice('현재 화면에 미리 적용했습니다. 방문자에게 반영하려면 저장하세요.')};$('#resetDesign').onclick=async()=>{await loadSettings();designEditor()};$('#designForm').onsubmit=async e=>{e.preventDefault();if(!ready){$('#designMsg').innerHTML=notice('Supabase 연결 후 저장할 수 있습니다.',true);return}const value=read();const {error}=await db.from('site_settings').upsert({key:'main',value});if(error){$('#designMsg').innerHTML=notice(errorText(error),true);return}siteSettings={...siteSettings,...value};applySettings();$('#designMsg').innerHTML=notice('디자인을 저장했습니다. 모든 방문자에게 적용됩니다.')};}
 function notFound(){$('#app').innerHTML='<div class="empty"><h2>페이지를 찾을 수 없어요.</h2><p>주소를 확인하거나 홈으로 돌아가 주세요.</p><a href="#/" class="btn">홈으로</a></div>'}
+const originalLogin = login;
+
+function loginWithSignup() {
+  originalLogin();
+
+  const panel = document.querySelector('#app .panel');
+  if (!panel) return;
+
+  const signupLink = document.createElement('p');
+  signupLink.style.marginTop = '20px';
+  signupLink.style.textAlign = 'center';
+  signupLink.innerHTML =
+    '<a href="#/signup">처음 오셨나요? 학생 회원가입하기</a>';
+
+  panel.appendChild(signupLink);
+}
 function render(){
   nav();
   let r = route();
 
   if(r === '/') home();
-  else if(r === '/login') login();
+  else if(r === '/login') loginWithSignup();
   else if(r === '/signup') window.showStudentSignup();
   else if(r === '/dashboard') dashboard();
   else if(r === '/new') editor();
