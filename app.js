@@ -49,6 +49,101 @@ function loginWithSignup() {
 
   panel.appendChild(signupLink);
 }
+async function showApprovals() {
+  const app = document.querySelector('#app');
+
+  // 로그인 여부 확인
+  if (!session) {
+    app.innerHTML = `
+      <div class="panel">
+        <h2>로그인이 필요합니다</h2>
+        <p>학생 가입 신청을 확인하려면 먼저 로그인해 주세요.</p>
+        <a href="#/login">로그인하기</a>
+      </div>
+    `;
+    return;
+  }
+
+  // 데이터베이스에서 관리자 권한 확인
+  const { data: myProfile, error: profileError } = await db
+    .from('profiles')
+    .select('role, approval_status, is_super_admin')
+    .eq('id', session.user.id)
+    .single();
+
+  const isTeacherAdmin =
+    myProfile?.role === 'teacher_admin' &&
+    myProfile?.approval_status === 'approved';
+
+  const isSuperAdmin =
+    myProfile?.role === 'admin' &&
+    myProfile?.is_super_admin === true &&
+    myProfile?.approval_status === 'approved';
+
+  if (profileError || (!isTeacherAdmin && !isSuperAdmin)) {
+    app.innerHTML = `
+      <div class="panel">
+        <h2>접근 권한이 없습니다</h2>
+        <p>이 페이지는 최고 관리자와 교사 관리자만 이용할 수 있습니다.</p>
+        <a href="#/">홈으로 돌아가기</a>
+      </div>
+    `;
+    return;
+  }
+
+  // 승인 대기 중인 학생 목록
+  const { data: students, error } = await db
+    .from('profiles')
+    .select('id, display_name, requested_role, approval_status')
+    .eq('approval_status', 'pending')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    app.innerHTML = `
+      <div class="panel">
+        <h2>학생 가입 승인 관리</h2>
+        <p>가입 신청 목록을 불러오지 못했습니다.</p>
+      </div>
+    `;
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="panel">
+      <h2>학생 가입 승인 관리</h2>
+      <p>승인을 기다리는 학생들의 가입 신청 목록입니다.</p>
+      <div id="approvalList"></div>
+    </div>
+  `;
+
+  const list = document.querySelector('#approvalList');
+
+  if (!students || students.length === 0) {
+    list.textContent = '현재 승인 대기 중인 학생이 없습니다.';
+    return;
+  }
+
+  students.forEach(student => {
+    const item = document.createElement('div');
+    item.className = 'panel';
+    item.style.marginTop = '12px';
+
+    const name = document.createElement('h3');
+    name.textContent = student.display_name;
+
+    const role = document.createElement('p');
+    role.textContent =
+      student.requested_role === 'reporter'
+        ? '신청 유형: 학생 기자'
+        : '신청 유형: 일반 학생';
+
+    const status = document.createElement('p');
+    status.textContent = '상태: 승인 대기';
+
+    item.append(name, role, status);
+    list.appendChild(item);
+  });
+}
 function render(){
   nav();
   let r = route();
@@ -56,6 +151,7 @@ function render(){
   if(r === '/') home();
   else if(r === '/login') loginWithSignup();
   else if(r === '/signup') window.showStudentSignup();
+  else if(r === '/approvals') showApprovals();  
   else if(r === '/dashboard') dashboard();
   else if(r === '/new') editor();
   else if(r.startsWith('/edit/')) editor(r.split('/')[2]);
