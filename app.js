@@ -155,18 +155,16 @@ async function showApprovals() {
 
       approveButton.disabled = true;
 
-      const { data, error } = await db
-        .from('profiles')
-        .update({ approval_status: 'approved' })
-        .eq('id', student.id)
-        .eq('approval_status', 'pending')
-        .select('id');
+     const { error } = await db.rpc('approve_student_signup', {
+        target_student_id: student.id
+});
 
-      if (error || !data || data.length !== 1) {
-        alert('승인에 실패했습니다. 관리자 권한을 확인해 주세요.');
-        approveButton.disabled = false;
-        return;
-      }
+      if (error) {
+         console.error('가입 승인 오류:', error);
+         alert('승인에 실패했습니다: ' + error.message);
+         approveButton.disabled = false;
+         return;
+}
 
       alert('가입 승인이 완료되었습니다.');
       showApprovals();
