@@ -41,7 +41,7 @@ function showStudentSignup() {
         </div>
 
         <div class="field">
-          <label for="studentPenName">이</label>
+          <label for="studentPenName">이름</label>
           <input
             id="studentPenName"
             type="text"
