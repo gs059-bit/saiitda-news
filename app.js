@@ -45,7 +45,7 @@ function loginWithSignup() {
   signupLink.style.marginTop = '20px';
   signupLink.style.textAlign = 'center';
   signupLink.innerHTML =
-    '<a href="#/signup">처음 오셨나요? 학생 회원가입하기</a>';
+    '<a href="#/signup"> 학생 회원가입하기</a>';
 
   panel.appendChild(signupLink);
 }
