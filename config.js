@@ -1,6 +1,7 @@
+
 window.SAIITDA_CONFIG = {
-  supabaseUrl: 'https://xqpyoqyteuiirpfzomny.supabase.co',
-  supabaseAnonKey: 'sb_publishable_Lp4esiEAhAGnheeAwKXQpg_hcKOh4yH',
+  supabaseUrl: 'https://dtggelkvvtbkjmucmrsf.supabase.co',
+  supabaseAnonKey: 'sb_publishable_fh4nLjnePZSjQqRg7fYFDQ_dEvpIM7o',
   schoolName: '강서초등학교',
   tagline: '우리 사이의 이야기를 찾아, 세상과 잇다'
 };
