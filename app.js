@@ -37,7 +37,19 @@ async function save(status){const title=$('#title').value.trim(),summary=$('#sum
   category,
   cover_url,
   status:status==='pending'&&!isAdmin()?'draft':status
-};let result;if(editId)result=await db.from('articles').update(payload).eq('id',editId);else result=await db.from('articles')
+};let result;if(editId){
+  const updatePayload={
+    title,
+    summary,
+    body,
+    category,
+    cover_url
+  };
+
+  result=await db.from('articles')
+    .update(updatePayload)
+    .eq('id',editId);
+}else result=await db.from('articles')
   .insert({...payload,author_id:session.user.id})
   .select('id')
   .single();if(result.error)throw result.error;
