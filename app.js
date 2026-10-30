@@ -592,6 +592,11 @@ commentApprove.textContent = '댓글 승인 관리';
 commentApprove.onclick = () => location.hash = '/comment-approvals';
 side.appendChild(commentApprove);
 
+const publishedComments = document.createElement('button');
+publishedComments.textContent = '공개 댓글 관리';
+publishedComments.onclick = () => location.hash = '/published-comments';
+side.appendChild(publishedComments);
+
   const invite=document.createElement('button');
   invite.textContent='가입 코드 발급';
   invite.onclick=async()=>{
