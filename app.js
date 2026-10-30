@@ -25,8 +25,112 @@ function published(){return articles.filter(a=>a.status==='published')}
 function card(a){return `<div class="story" role="link" tabindex="0" data-article="${a.id}">${a.cover_url?`<img loading="lazy" src="${esc(a.cover_url)}" alt="기사 대표 사진">`:''}<div class="eyebrow">${esc(a.category)}</div><h3>${esc(a.title)}</h3><p class="summary">${esc(a.summary||'')}</p><div class="meta">${esc(a.author_name||'사이잇다 신문부')} · ${date(a.published_at||a.created_at)}</div></div>`}
 function wireCards(){document.querySelectorAll('[data-article]').forEach(el=>{el.onclick=()=>location.hash='/article/'+el.dataset.article;el.onkeydown=e=>{if(e.key==='Enter')el.click()}})}
 function home(){let items=published().filter(a=>(currentCat==='전체기사'||a.category===currentCat)&&(!search||[a.title,a.summary,a.body,a.author_name].join(' ').toLowerCase().includes(search.toLowerCase())));items.sort((a,b)=>new Date(b.published_at||b.created_at)-new Date(a.published_at||a.created_at));let top=items[0];items=items.filter(a=>a.id!==top?.id);$('#app').innerHTML=`<div class="page-head"><div><h1>${esc(currentCat==='전체기사'?'전체기사':currentCat)}</h1><small>학생의 시선으로 기록한 우리 학교 이야기</small></div><input class="search" id="search" aria-label="기사 검색" placeholder="기사 제목이나 내용 검색" value="${esc(search)}"></div>${!ready?notice('현재는 설정 전 미리보기입니다. config.js에 Supabase 정보를 입력하고 database.sql을 실행하면 기사 발행과 로그인이 활성화됩니다.'):''}${top?`<section class="hero" data-article="${top.id}"><div>${top.cover_url?`<img class="photo" src="${esc(top.cover_url)}" alt="대표 기사 사진">`:`<div class="photo"></div>`}</div><div><div class="eyebrow">주요 기사 · ${esc(top.category)}</div><h2>${esc(top.title)}</h2><p class="summary">${esc(top.summary||'')}</p><div class="meta">${esc(top.author_name||'사이잇다 신문부')} · ${date(top.published_at||top.created_at)}</div></div></section><div class="grid">${items.map(card).join('')}</div>`:`<div class="empty"><h2>아직 등록된 기사가 없어요.</h2><p>신문부의 첫 번째 기사가 발행되면 이곳에 나타납니다.</p></div>`}`;$('#search').oninput=e=>{let pos=e.target.selectionStart;search=e.target.value;home();let s=$('#search');s.focus();s.setSelectionRange(pos,pos)};wireCards();}
-function articleView(id){const a=articles.find(x=>x.id===id);if(!a||(a.status!=='published'&&!canApprove()&&a.author_id!==session?.user?.id)){notFound();return}$('#app').innerHTML=`<article class="article"><div class="eyebrow">${esc(a.category)}</div><h1>${esc(a.title)}</h1><p class="lead">${esc(a.summary)}</p><div class="byline">${esc(a.author_name||'사이잇다 신문부')} · ${date(a.published_at||a.created_at)}</div>${a.cover_url?`<img class="cover" src="${esc(a.cover_url)}" alt="기사 대표 사진">`:''}<div class="body">${esc(a.body)}</div><div class="actions" style="margin-top:28px"><button class="btn secondary" id="back">기사 목록으로</button>${canWrite()&&(canApprove()||a.author_id===session.user.id)?`<button class="btn" id="edit">기사 수정</button>`:''}</div></article>`;$('#back').onclick=()=>location.hash='/';if($('#edit'))$('#edit').onclick=()=>location.hash='/edit/'+a.id}
+function articleView(id){const a=articles.find(x=>x.id===id);if(!a||(a.status!=='published'&&!canApprove()&&a.author_id!==session?.user?.id)){notFound();return}$('#app').innerHTML=`<article class="article"><div class="eyebrow">${esc(a.category)}</div><h1>${esc(a.title)}</h1><p class="lead">${esc(a.summary)}</p><div class="byline">${esc(a.author_name||'사이잇다 신문부')} · ${date(a.published_at||a.created_at)}</div>${a.cover_url?`<img class="cover" src="${esc(a.cover_url)}" alt="기사 대표 사진">`:''}<div class="body">${esc(a.body)}</div><div class="actions" style="margin-top:28px"><button class="btn secondary" id="back">기사 목록으로</button>${canWrite()&&(canApprove()||a.author_id===session.user.id)?`<button class="btn" id="edit">기사 수정</button>`:''}</div></article>`;$('#back').onclick=()=>location.hash='/';if($('#edit'))$('#edit').onclick=()=>location.hash='/edit/'+a.id;
+showArticleComments(a.id);
+}
 function login(){if(session){location.hash='/dashboard';return}$('#app').innerHTML=`<div class="panel" style="max-width:470px;margin:50px auto"><h2>신문부 기자 로그인</h2><p class="muted">선생님이 발급한 기자 계정으로 로그인하세요. 일반 방문자는 로그인하지 않아도 기사를 읽을 수 있어요.</p>${!ready?notice('먼저 Supabase 연결 설정을 완료해 주세요.',true):''}<form id="loginform"><div class="field"><label for="email">아이디 또는 교사 이메일</label><input id="email" type="text" required autocomplete="username"></div><div class="field"><label for="password">비밀번호</label><input id="password" type="password" required autocomplete="current-password"></div><button class="btn" ${!ready?'disabled':''}>로그인</button></form><div id="msg"></div></div>`;$('#loginform').onsubmit=async e=>{e.preventDefault();let b=$('#loginform button');b.disabled=true;const {error}=await db.auth.signInWithPassword({email:(v=>v.includes('@')?v:`${v}@students.saiitda.invalid`)($('#email').value.trim().toLowerCase()),password:$('#password').value});b.disabled=false;if(error)$('#msg').innerHTML=notice('로그인할 수 없습니다. 계정 정보를 확인해 주세요.',true);else location.hash='/dashboard'}}
+
+async function showArticleComments(articleId) {
+  const article = document.querySelector('#app article.article');
+  if (!article || !db) return;
+
+  const section = document.createElement('section');
+  section.className = 'panel';
+  section.style.marginTop = '32px';
+  article.appendChild(section);
+
+  async function refreshComments() {
+    section.innerHTML = '<h2>댓글</h2><p>댓글을 불러오는 중...</p>';
+
+    const { data, error } = await db
+      .from('comments')
+      .select('id,content,created_at')
+      .eq('article_id', articleId)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      section.innerHTML = '<h2>댓글</h2><p>댓글을 불러오지 못했습니다.</p>';
+      console.error('댓글 조회 오류:', error);
+      return;
+    }
+
+    section.innerHTML = `
+      <h2>댓글 (${data.length})</h2>
+      <div id="commentList">
+        ${data.length
+          ? data.map(c => `
+            <div class="entry">
+              <p>${esc(c.content)}</p>
+              <small>${date(c.created_at)}</small>
+            </div>
+          `).join('')
+          : '<p class="muted">아직 공개된 댓글이 없습니다.</p>'}
+      </div>
+      <div id="commentFormArea"></div>
+    `;
+
+    const area = section.querySelector('#commentFormArea');
+
+    if (!session) {
+      area.innerHTML = '<p class="muted">댓글을 작성하려면 학생 로그인이 필요합니다.</p>';
+      return;
+    }
+
+    if (!profile || profile.approval_status !== 'approved') {
+      area.innerHTML = '<p class="muted">가입 승인 후 댓글을 작성할 수 있습니다.</p>';
+      return;
+    }
+
+    area.innerHTML = `
+      <form id="commentForm">
+        <div class="field">
+          <label for="commentContent">댓글 작성</label>
+          <textarea id="commentContent"
+            maxlength="500"
+            required
+            placeholder="서로 존중하는 댓글을 작성해 주세요."></textarea>
+        </div>
+        <button class="btn" type="submit">댓글 등록</button>
+        <p class="small muted">댓글은 선생님 승인 후 공개됩니다.</p>
+      </form>
+      <div id="commentMessage"></div>
+    `;
+
+    area.querySelector('#commentForm').onsubmit = async e => {
+      e.preventDefault();
+
+      const content = area.querySelector('#commentContent').value.trim();
+      if (!content || content.length > 500) return;
+
+      const button = area.querySelector('button');
+      button.disabled = true;
+
+      const { error: insertError } = await db
+        .from('comments')
+        .insert({
+          article_id: articleId,
+          author_id: session.user.id,
+          content,
+          status: 'pending'
+        });
+
+      if (insertError) {
+        button.disabled = false;
+        area.querySelector('#commentMessage').textContent =
+          '댓글 등록 실패: ' + errorText(insertError);
+        return;
+      }
+
+      area.querySelector('#commentForm').reset();
+      area.querySelector('#commentMessage').textContent =
+        '댓글이 등록되었습니다. 선생님 승인을 기다려 주세요.';
+    };
+  }
+
+  await refreshComments();
+}
+
 function dashboard(){if(!session){location.hash='/login';return}if(!canWrite()){
   const message = profile?.approval_status === 'pending'
     ? '가입 승인 대기 중입니다. 선생님의 승인을 받은 뒤 기자실을 이용할 수 있어요.'
