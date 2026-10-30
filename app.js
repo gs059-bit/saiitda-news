@@ -471,6 +471,12 @@ function setupTeacherTools(){
   approve.textContent='학생 가입 승인';
   approve.onclick=()=>location.hash='/approvals';
   side.appendChild(approve);
+  
+const commentApprove = document.createElement('button');
+commentApprove.textContent = '댓글 승인 관리';
+commentApprove.onclick = () => location.hash = '/comment-approvals';
+side.appendChild(commentApprove);
+
   const invite=document.createElement('button');
   invite.textContent='가입 코드 발급';
   invite.onclick=async()=>{
