@@ -186,6 +186,36 @@ async function showCommentApprovals() {
       </div>
     `;
 
+const rejectButton = document.createElement('button');
+rejectButton.className = 'btn';
+rejectButton.textContent = '댓글 거절';
+item.querySelector('.actions').appendChild(rejectButton);
+
+rejectButton.onclick = async () => {
+  if (!confirm('이 댓글을 거절할까요?')) return;
+
+  rejectButton.disabled = true;
+
+  const { data: updated, error } = await db
+    .from('comments')
+    .update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString()
+    })
+    .eq('id', comment.id)
+    .eq('status', 'pending')
+    .select('id');
+
+  if (error || updated?.length !== 1) {
+    alert('댓글 거절에 실패했습니다.');
+    rejectButton.disabled = false;
+    return;
+  }
+
+  alert('댓글이 거절되었습니다.');
+  showCommentApprovals();
+};
+
     const button = item.querySelector('button');
 
     button.onclick = async () => {
