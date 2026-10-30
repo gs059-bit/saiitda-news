@@ -247,6 +247,91 @@ rejectButton.onclick = async () => {
   });
 }
 
+async function showPublishedCommentManagement() {
+  const app = document.querySelector('#app');
+
+  if (!session || !canApprove() ||
+      profile?.approval_status !== 'approved') {
+    app.innerHTML = notice('댓글 관리 권한이 없습니다.', true);
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="panel">
+      <h2>공개 댓글 관리</h2>
+      <p>이미 공개된 댓글을 확인하고 비공개로 변경할 수 있습니다.</p>
+      <div id="publishedComments">불러오는 중...</div>
+    </div>
+  `;
+
+  const { data, error } = await db
+    .from('comments')
+    .select('id,article_id,content,created_at')
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false });
+
+  const list = document.querySelector('#publishedComments');
+  if (!list) return;
+
+  if (error) {
+    list.textContent = '댓글 조회 실패: ' + errorText(error);
+    return;
+  }
+
+  if (!data.length) {
+    list.textContent = '현재 공개된 댓글이 없습니다.';
+    return;
+  }
+
+  list.innerHTML = '';
+
+  data.forEach(comment => {
+    const article = articles.find(a => a.id === comment.article_id);
+    const item = document.createElement('div');
+    item.className = 'entry';
+
+    item.innerHTML = `
+      <div>
+        <strong>${esc(article?.title || '기사')}</strong>
+        <p>${esc(comment.content)}</p>
+        <small>${date(comment.created_at)}</small>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button">비공개 처리</button>
+      </div>
+    `;
+
+    const button = item.querySelector('button');
+
+    button.onclick = async () => {
+      if (!confirm('이 댓글을 비공개로 변경할까요?')) return;
+
+      button.disabled = true;
+
+      const { data: updated, error: updateError } = await db
+        .from('comments')
+        .update({
+          status: 'rejected',
+          reviewed_at: new Date().toISOString()
+        })
+        .eq('id', comment.id)
+        .eq('status', 'approved')
+        .select('id');
+
+      if (updateError || updated?.length !== 1) {
+        alert('비공개 처리에 실패했습니다.');
+        button.disabled = false;
+        return;
+      }
+
+      alert('댓글이 비공개 처리되었습니다.');
+      showPublishedCommentManagement();
+    };
+
+    list.appendChild(item);
+  });
+}
+
 function dashboard(){if(!session){location.hash='/login';return}if(!canWrite()){
   const message = profile?.approval_status === 'pending'
     ? '가입 승인 대기 중입니다. 선생님의 승인을 받은 뒤 기자실을 이용할 수 있어요.'
