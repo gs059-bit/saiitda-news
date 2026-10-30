@@ -500,6 +500,7 @@ function render(){
   else if(r === '/login') loginWithSignup();
   else if(r === '/signup') window.showStudentSignup();
   else if(r === '/approvals') showApprovals();  
+  else if(r === '/comment-approvals') showCommentApprovals();
   else if(r === '/dashboard') dashboard();
   else if(r === '/new') editor();
   else if(r.startsWith('/edit/')) editor(r.split('/')[2]);
