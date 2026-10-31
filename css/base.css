@@ -1,0 +1,53 @@
+/* 모든 페이지 공통: 색상·글꼴 변수와 기본 스타일 */
+:root {
+  --ink: #17191d;
+  --muted: #5f6b75;
+  --line: #e0e2e5;
+  --blue: #0067bd; /* 관리자 디자인 설정의 강조 색상이 덮어쓴다 */
+  --paper: #fff;
+  --soft: #f5f6f7;
+  --sans: 'Apple SD Gothic Neo', 'Malgun Gothic', Arial, sans-serif;
+  --serif: Georgia, 'Malgun Gothic', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+.hide {
+  display: none !important;
+}
+
+/* 로그인·개인정보처리방침 위쪽의 "사이잇다 홈으로" 링크 */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.back img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+.back:hover {
+  color: var(--blue);
+}

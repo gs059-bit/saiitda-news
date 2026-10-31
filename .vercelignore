@@ -1,0 +1,9 @@
+# 사이트에 필요 없는 개발용 파일은 배포하지 않는다
+node_modules/
+database/
+README.md
+package.json
+package-lock.json
+eslint.config.js
+.prettierrc.json
+.prettierignore

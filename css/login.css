@@ -1,0 +1,185 @@
+/* login.html */
+body {
+  min-height: 100vh;
+  background: var(--soft);
+}
+
+.wrap {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 28px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+/* 상단 가운데 교표 + 홈으로 */
+.back {
+  align-self: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 32px 28px;
+}
+.logo {
+  display: block;
+  width: 260px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 22px;
+}
+h1 {
+  margin: 0 0 20px;
+  text-align: center;
+  font-size: 22px;
+}
+
+/* 역할 고르기 (라디오 버튼을 탭처럼) */
+.roles {
+  border: 0;
+  margin: 0 0 6px;
+  padding: 0;
+}
+.roles legend {
+  padding: 0;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.seg {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #cbd0d5;
+  border-radius: 8px;
+}
+.seg label {
+  position: relative;
+  cursor: pointer;
+}
+.seg input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+}
+.seg span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+}
+.seg input:checked + span {
+  background: var(--ink);
+  color: white;
+}
+.seg input:focus-visible + span {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 16px 0;
+}
+.field label {
+  font-weight: 700;
+  font-size: 14px;
+}
+.field input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #bdc5cb;
+  border-radius: 6px;
+  background: white;
+}
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.agree {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.agree input {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+}
+.agree a {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.btn {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.switch {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+.switch a {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* 기본은 오류(빨강), .ok는 안내(파랑) */
+.notice {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e6b9b9;
+  background: #fff2f2;
+  color: #912424;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.notice.ok {
+  border-color: #b9d4ec;
+  background: #f0f7fe;
+  color: #17406b;
+}
+
+@media (max-width: 400px) {
+  .seg {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .card {
+    padding: 26px 18px;
+  }
+}
