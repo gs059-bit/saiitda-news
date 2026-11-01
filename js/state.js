@@ -26,10 +26,14 @@ export const state = {
   search: ''
 };
 
-// 편집 권한(기사 승인·카테고리·디자인·댓글·회원 관리)은 최고 관리자만. 선생님은 일반 학생처럼 읽기와 댓글만 한다
+// 사이트 관리 권한은 최고 관리자만.
+// 선생님과 학생 기자는 기사 작성 권한을 가진다.
 export const isAdmin = () => Boolean(state.profile?.editor);
 export const canModerate = isAdmin;
-export const canWrite = () => isAdmin() || state.profile?.role === 'reporter';
+export const canWrite = () =>
+  isAdmin() ||
+  state.profile?.role === 'reporter' ||
+  state.profile?.role === 'teacher';
 export const isMine = a => a.author_id === state.session?.user?.id;
 
 export const published = () => state.articles.filter(a => a.status === 'published');
