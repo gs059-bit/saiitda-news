@@ -43,9 +43,24 @@ export function render() {
 
 export function nav() {
   const { session, profile, categories, currentCat } = state;
+
+  // 기존 기사 카테고리 + 고정 소개 메뉴
   $('#nav').innerHTML = [ALL, ...categories]
-    .map(c => `<button class="${currentCat === c ? 'active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`)
-    .join('');
+    .map(c => `
+      <button
+        class="${route() === '/' && currentCat === c ? 'active' : ''}"
+        data-cat="${esc(c)}">
+        ${esc(c)}
+      </button>
+    `)
+    .join('') + `
+      <button
+        id="aboutNav"
+        class="${route().startsWith('/about') ? 'active' : ''}">
+        사이를 잇는 사람들
+      </button>
+    `;
+
   $('#nav')
     .querySelectorAll('[data-cat]')
     .forEach(b => {
@@ -56,7 +71,16 @@ export function nav() {
       };
     });
 
-  // 비로그인: 로그인 / 로그인: 내 정보 · (기자·관리자만) 기자실 · 로그아웃
+  
+  // 사이를 잇는 사람들 소개 페이지 열기
+  $('#aboutNav').onclick = () => {
+    if (route() === '/about/intro') {
+      render();
+    } else {
+      location.hash = '/about/intro';
+    }
+  };
+
   const authBtn = $('#authBtn');
   authBtn.hidden = Boolean(session) && !canWrite();
   authBtn.textContent = session ? '기자실' : '로그인';
