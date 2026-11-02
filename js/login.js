@@ -38,12 +38,12 @@ function view() {
   for (const m of ['#msg', '#smsg', '#fmsg', '#rmsg']) $(m).replaceChildren();
 }
 
-// 선생님 계정은 DB 규칙상 스스로 가입할 수 없고 최고 관리자가 지정한다
+ // 선생님도 학생 기자, 일반 학생과 동일하게 가입 신청할 수 있다.
+ // 실제 계정 권한은 최고 관리자가 승인한 뒤 부여된다.
 function toggleTeacherNote() {
-  const teacher = $('input[name=srole]:checked').value === 'teacher';
-  $('#teacherNote').classList.toggle('hide', !teacher);
-  $('#signupFields').classList.toggle('hide', teacher);
-  $('#signupFields').disabled = teacher;
+  $('#teacherNote').classList.add('hide');
+  $('#signupFields').classList.remove('hide');
+  $('#signupFields').disabled = false;
 }
 
 async function login(e) {
