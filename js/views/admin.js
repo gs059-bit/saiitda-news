@@ -160,9 +160,15 @@ export async function signupRequests() {
     ws.innerHTML = `<h2>가입 승인</h2>${notice(errorText(error), true)}`;
     return;
   }
-  const want = { reporter: '학생 기자', reader: '일반 학생' };
+  const want = {
+  teacher_admin: '선생님',
+  reporter: '학생 기자',
+  reader: '일반 학생'
+};
   ws.innerHTML = `<h2>가입 승인 (${data.length})</h2>
-    <p class="muted">승인하면 신청한 역할로 로그인할 수 있습니다. 선생님 계정은 최고 관리자가 직접 지정합니다.</p>
+   
+<p class="muted">선생님, 학생 기자, 일반 학생의 가입 신청을 확인하고 승인할 수 있습니다. 가입 승인은 최고 관리자만 가능합니다.</p>
+
     ${
       data.length
         ? data
