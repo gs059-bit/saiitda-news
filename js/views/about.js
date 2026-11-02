@@ -6,37 +6,32 @@ import { $ } from '../utils.js';
 
 export function about(section = 'intro') {
   const page = section === 'reporters' ? 'reporters' : 'intro';
+  const intro = `
+    <p class="about-eyebrow">ABOUT SAIITDA</p>
+    <h2>사이잇다란?</h2>
 
- 
-const intro = `
-  <p class="about-eyebrow">ABOUT SAIITDA</p>
-  <h2>사이잇다란?</h2>
+    <div style="margin-top:28px; text-align:center;">
+      <img
+        src="/saiitda-intro.png"
+        alt="사이잇다 소개 자료 전체"
+        style="
+          display:block;
+          width:100%;
+          max-width:900px;
+          height:auto;
+          margin:0 auto;
+        "
+      >
+    </div>
 
-  <div style="margin-top:28px;">
-   
-<iframe
-  src="/saiitda-intro.pdf"
-  title="사이잇다 소개 원문"
-  loading="eager"
-  style="
-    display:block;
-    width:100%;
-    height:900px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    background:#fff;
-  "
-></iframe>
-
-  </div>
-
-  <p style="margin-top:16px; text-align:center;">
-    <a href="./saiitda-intro.pdf" target="_blank" rel="noopener noreferrer">
-      소개 자료 원본 크게 보기
-    </a>
-  </p>
-`;
-
+    <p style="margin-top:20px; text-align:center;">
+      <a href="/saiitda-intro.pdf"
+         target="_blank"
+         rel="noopener noreferrer">
+        소개 자료 원본 PDF 보기
+      </a>
+    </p>
+  `;
   const reporters = `
     <p class="about-eyebrow">OUR REPORTERS</p>
     <h2>어린이 기자단 소개</h2>
