@@ -7,35 +7,35 @@ import { $ } from '../utils.js';
 export function about(section = 'intro') {
   const page = section === 'reporters' ? 'reporters' : 'intro';
 
-  const intro = `
-    <p class="about-eyebrow">ABOUT SAIITDA</p>
-    <h2>사이잇다란?</h2>
-    <div class="about-line"></div>
+ 
+const intro = `
+  <p class="about-eyebrow">ABOUT SAIITDA</p>
+  <h2>사이잇다란?</h2>
 
-    <h3>우리의 이야기를 잇다, 사이잇다.</h3>
+  <div style="margin-top:28px;">
+   
+<iframe
+  src="/saiitda-intro.pdf"
+  title="사이잇다 소개 원문"
+  loading="eager"
+  style="
+    display:block;
+    width:100%;
+    height:900px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#fff;
+  "
+></iframe>
 
-    <p>
-      사이잇다는 강서초등학교 어린이 기자단이
-      직접 만들어 가는 온라인 신문입니다.
-    </p>
+  </div>
 
-    <p>
-      학교에서 일어나는 다양한 소식과
-      학생들의 생각, 우리 주변의 이야기를
-      어린이 기자들의 시선으로 전합니다.
-    </p>
-
-    <p>
-      작은 목소리도 소중하게 담아
-      친구와 친구, 학교와 세상을 이어가는 것.
-      그것이 사이잇다가 꿈꾸는 신문입니다.
-    </p>
-
-    <div class="about-quote">
-      서로 다른 이야기가 만나
-      우리의 사이를 이어갑니다.
-    </div>
-  `;
+  <p style="margin-top:16px; text-align:center;">
+    <a href="./saiitda-intro.pdf" target="_blank" rel="noopener noreferrer">
+      소개 자료 원본 크게 보기
+    </a>
+  </p>
+`;
 
   const reporters = `
     <p class="about-eyebrow">OUR REPORTERS</p>
