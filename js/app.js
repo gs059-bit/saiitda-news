@@ -46,23 +46,57 @@ export function nav() {
   const { session, profile, categories, currentCat } = state;
 
   // 기사 카테고리와 소개 메뉴 표시
+  
+  // 카테고리별 이미지 파일
+  const menuImages = {
+    '전체기사': 'menu-all.png',
+    '우리를 잇다': 'menu-us.png',
+    '오늘의 사이': 'menu-today.png',
+    '세상을 잇다': 'menu-world.png',
+    '책 사이를 잇다': 'menu-books.png',
+    '마음을 잇다': 'menu-heart.png'
+  };
+
+  // 모든 카테고리를 동일한 크기의 이미지 버튼으로 표시
+  $('#nav').style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+    padding: 16px 0;
+    align-items: center;
+  `;
+
   $('#nav').innerHTML = [ALL, ...categories]
     .map(c => `
       <button
+        type="button"
+        data-cat="${esc(c)}"
         class="${route() === '/' && currentCat === c ? 'active' : ''}"
-        data-cat="${esc(c)}">
-        ${esc(c)}
+        aria-label="${esc(c)}"
+        style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;"
+      >
+        <img
+          src="/${menuImages[c] || 'menu-all.png'}"
+          alt="${esc(c)}"
+          style="display:block;width:100%;height:auto;border-radius:12px;"
+        >
       </button>
-    `)
-    .join('') + `
+    `).join('') + `
       <button
+        type="button"
         id="aboutNav"
-        class="${route().startsWith('/about') ? 'active' : ''}">
-        사이를 잇는 사람들
+        class="${route().startsWith('/about') ? 'active' : ''}"
+        aria-label="사이를 잇는 사람들"
+        style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;"
+      >
+        <img
+          src="/menu-people.png"
+          alt="사이를 잇는 사람들"
+          style="display:block;width:100%;height:auto;border-radius:12px;"
+        >
       </button>
     `;
 
-  // 기사 카테고리 클릭
   $('#nav')
     .querySelectorAll('[data-cat]')
     .forEach(b => {
