@@ -41,10 +41,11 @@ export function render() {
   notFound();
 }
 
+
 export function nav() {
   const { session, profile, categories, currentCat } = state;
 
-  // 기존 기사 카테고리 + 고정 소개 메뉴
+  // 기사 카테고리와 소개 메뉴 표시
   $('#nav').innerHTML = [ALL, ...categories]
     .map(c => `
       <button
@@ -61,7 +62,7 @@ export function nav() {
       </button>
     `;
 
- 
+  // 기사 카테고리 클릭
   $('#nav')
     .querySelectorAll('[data-cat]')
     .forEach(b => {
@@ -76,19 +77,12 @@ export function nav() {
       };
     });
 
-  // 사이를 잇는 사람들 소개 페이지 열기
+  // 소개 메뉴 클릭
   $('#aboutNav').onclick = () => {
     location.hash = '/about/intro';
     render();
   };
 
-
-  
-  // 사이를 잇는 사람들 소개 페이지 열기
- $('#aboutNav').onclick = () => {
-  location.hash = '/about/intro';
-  render();
-};
 
   const authBtn = $('#authBtn');
   authBtn.hidden = Boolean(session) && !canWrite();
