@@ -24,13 +24,7 @@ export function about(section = 'intro') {
       >
     </div>
 
-    <p style="margin-top:20px; text-align:center;">
-      <a href="/saiitda-intro.pdf"
-         target="_blank"
-         rel="noopener noreferrer">
-        소개 자료 원본 PDF 보기
-      </a>
-    </p>
+  
   `;
   const reporters = `
     <p class="about-eyebrow">OUR REPORTERS</p>
