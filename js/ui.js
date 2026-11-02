@@ -21,8 +21,14 @@ function photo(a) {
   return `<div class="noimg" style="background:${info?.tint || '#eceef1'}">${svg(info?.icon || paperIcon, 44)}</div>`;
 }
 
+// 카드·대표 기사에 카테고리 색을 넘긴다(css/theme.css의 --c, --t)
+const catStyle = a => {
+  const info = CATEGORY_INFO[a.category];
+  return `--c:${info?.color || '#0067bd'};--t:${info?.tint || '#eceef1'}`;
+};
+
 export function card(a, feature = false) {
-  return `<div class="story${feature ? ' feature' : ''}" role="link" tabindex="0" data-article="${a.id}">
+  return `<div class="story${feature ? ' feature' : ''}" style="${catStyle(a)}" role="link" tabindex="0" data-article="${a.id}">
     <div class="thumb">${photo(a)}</div>
     <div class="eyebrow">${esc(a.category)}</div>
     <h3>${esc(a.title)}</h3>
@@ -34,7 +40,7 @@ export function card(a, feature = false) {
 // 메인 맨 위 "이번 호" 대표 기사
 export function lead(a) {
   const issue = state.siteSettings.issue ? ' · ' + esc(state.siteSettings.issue) : '';
-  return `<section class="hero" role="link" tabindex="0" data-article="${a.id}" aria-label="이번 호 대표 기사">
+  return `<section class="hero" style="${catStyle(a)}" role="link" tabindex="0" data-article="${a.id}" aria-label="이번 호 대표 기사">
     <div class="thumb">${photo(a)}</div>
     <div class="leadtext">
       <div class="eyebrow">이번 호${issue} · ${esc(a.category)}</div>

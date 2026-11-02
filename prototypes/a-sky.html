@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시안 A · 맑은 하늘</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0}img{max-width:100%}a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.nav{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;max-width:1080px;margin:0 auto;padding:18px 12px}
+.nav button{border:0;background:none;padding:0}.nav img{display:block;width:100%;aspect-ratio:900/560;object-fit:contain}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.nav{grid-template-columns:repeat(4,1fr)}.hero{grid-template-columns:1fr!important}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.note{position:fixed;right:12px;bottom:12px;background:#111c;color:#fff;font:12px sans-serif;padding:6px 10px;border-radius:20px;z-index:9}
+
+body{background:linear-gradient(#e6f4ff 0,#f7fbff 420px,#fff 100%);color:#23364a;font-family:'Gowun Dodum',sans-serif;line-height:1.6}
+.util{background:#fff;border-bottom:1px solid #d9eaf7}.utilin{display:flex;justify-content:space-between;align-items:center;min-height:56px}
+.brand{display:flex;align-items:center;gap:8px}.brand small{color:#6b8299}
+.pill{border:2px solid #0067bd;background:#fff;color:#0067bd;border-radius:999px;padding:7px 18px;font-weight:700}
+.mast{text-align:center;padding-top:22px}.logo{width:min(560px,80%);height:auto;border-radius:22px;box-shadow:0 10px 26px #0067bd33}
+.sub{color:#4d6a86;margin:12px 0 0;font-size:16px}
+.navbar{margin:6px 0 10px}.nav button{border-radius:16px;transition:transform .2s}.nav button:hover{transform:translateY(-5px) rotate(-1.5deg)}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 14px 40px #0067bd22;border:3px solid #fff}
+.thumb{background:linear-gradient(135deg,var(--t),#fff);display:grid;place-items:center;color:var(--c);font-weight:700;min-height:220px}
+.lead{padding:36px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.lead h2{font-size:clamp(26px,3.4vw,38px);margin:0;line-height:1.35;color:#16324f}.lead p{margin:0;font-size:17px;color:#4d6a86}
+.tag{align-self:flex-start;background:var(--t);color:var(--c);font-weight:800;font-size:13px;padding:5px 12px;border-radius:999px}
+.more{align-self:flex-start;margin-top:8px;background:#0067bd;color:#fff;padding:12px 24px;border-radius:999px;font-weight:800;box-shadow:0 6px 14px #0067bd44}
+.sechead{display:flex;justify-content:space-between;align-items:end;margin:44px 0 16px}.sechead h2{margin:0;font-size:26px;color:#16324f}.sechead span{color:#0067bd;font-weight:700}
+.card{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 8px 24px #23364a14;transition:transform .2s}.card:hover{transform:translateY(-6px)}
+.card .thumb{aspect-ratio:4/3;min-height:0}.card .body{padding:18px 20px 22px;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:20px;color:#16324f;line-height:1.4}.card p{margin:0;color:#5d768f;font-size:15px}.card small{color:#8aa0b5}
+.foot{margin-top:60px;background:#16324f;color:#cfe0f0;padding:30px 0;font-size:13px;line-height:1.9;text-align:center}
+
+</style></head><body>
+<div class="note">시안 · 샘플 내용</div>
+<div class="util"><div class="wrap utilin"><span class="brand"><img src="../school-emblem.png" alt="" height="30"> <b>강서초등학교</b> <small>어린이 기자단 웹진</small></span><span><button class="pill">로그인</button></span></div></div>
+
+<header class="mast wrap"><a href="#"><img class="logo" src="../logo.jpg" alt="사이잇다" width="849" height="255"></a><p class="sub">학생 기자들이 직접 취재하고 기록하는 우리 학교의 이야기</p></header>
+<nav class="navbar"><div class="nav"><button aria-label="전체기사"><img src="../menu-all.png" alt="전체기사"></button><button aria-label="우리를 잇다"><img src="../menu-us.png" alt="우리를 잇다"></button><button aria-label="오늘의 사이"><img src="../menu-today.png" alt="오늘의 사이"></button><button aria-label="세상을 잇다"><img src="../menu-world.png" alt="세상을 잇다"></button><button aria-label="책 사이를 잇다"><img src="../menu-books.png" alt="책 사이를 잇다"></button><button aria-label="마음을 잇다"><img src="../menu-heart.png" alt="마음을 잇다"></button><button aria-label="사이를 잇는 사람들"><img src="../menu-people.png" alt="사이를 잇는 사람들"></button></div></nav>
+<main class="wrap">
+  <section class="hero" style="--c:#f59e0b;--t:#fff3dc">
+    <div class="thumb"><span>샘플 사진</span></div>
+    <div class="lead"><span class="tag">이번 호 대표 기사</span><h2>우리 반 친구들의 꿈 이야기</h2><p>장래희망을 주제로 3학년 친구들을 인터뷰했어요. 의사, 축구선수, 유튜버까지 다양한 꿈이 있었답니다.</p><small>김하늘 기자 · 11월 1일</small><a class="more" href="#">기사 읽기 →</a></div>
+  </section>
+  <div class="sechead"><h2>새로 올라온 기사</h2><span>더 보기 →</span></div>
+  <div class="grid">
+  <article class="card" style="--c:#eab308;--t:#fff8cc">
+    <div class="thumb"><span>샘플 사진</span></div>
+    <div class="body"><span class="tag">오늘의 사이</span><h3>운동장에 가을이 왔어요</h3><p>단풍잎이 가득한 운동장에서 친구들이 낙엽 놀이를 했습니다. 사진으로 그날의 모습을 담았어요.</p><small>이도윤 기자 · 10월 30일</small></div>
+  </article>
+  <article class="card" style="--c:#16a34a;--t:#e0f5e8">
+    <div class="thumb"><span>샘플 사진</span></div>
+    <div class="body"><span class="tag">세상을 잇다</span><h3>우리 동네 재활용, 어떻게 할까?</h3><p>분리배출을 제대로 하면 지구가 건강해져요. 기자가 직접 알아본 올바른 분리배출 방법!</p><small>박서연 기자 · 10월 28일</small></div>
+  </article>
+  <article class="card" style="--c:#7c5cd6;--t:#ece6fa">
+    <div class="thumb"><span>샘플 사진</span></div>
+    <div class="body"><span class="tag">책 사이를 잇다</span><h3>이번 달 추천 도서 3권</h3><p>도서관 선생님께 여쭤본 5학년 친구들에게 인기 있는 책을 소개합니다.</p><small>최민준 기자 · 10월 27일</small></div>
+  </article>
+  <article class="card" style="--c:#e0527a;--t:#fde4ec">
+    <div class="thumb"><span>샘플 사진</span></div>
+    <div class="body"><span class="tag">마음을 잇다</span><h3>교장 선생님께 물어봤어요</h3><p>"학교에서 가장 행복한 순간은 언제인가요?" 교장 선생님과 나눈 따뜻한 이야기를 전합니다.</p><small>정유나 기자 · 10월 25일</small></div>
+  </article>
+  <article class="card" style="--c:#f59e0b;--t:#fff3dc">
+    <div class="thumb"><span>샘플 사진</span></div>
+    <div class="body"><span class="tag">우리를 잇다</span><h3>우리 반 친구들의 꿈 이야기</h3><p>장래희망을 주제로 3학년 친구들을 인터뷰했어요. 의사, 축구선수, 유튜버까지 다양한 꿈이 있었답니다.</p><small>김하늘 기자 · 11월 1일</small></div>
+  </article></div>
+</main>
+<footer class="foot"><div class="wrap">사이잇다 · 강서초등학교 어린이 기자단 웹진<br>기사에 등장하는 학생의 사진과 개인정보는 게시 전 학교 지침에 따라 확인합니다. · 개인정보처리방침</div></footer>
+</body></html>
