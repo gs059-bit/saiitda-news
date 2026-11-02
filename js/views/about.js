@@ -60,8 +60,8 @@ export function about(section = 'intro') {
     </div>
   `;
 
-  $('#workspace').innerHTML = `
-    <style>
+$('#app').innerHTML = `
+<style>
       .about-page {
         max-width: 1100px;
         margin: 0 auto;
