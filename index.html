@@ -187,6 +187,79 @@
     transition: none;
   }
 }
+    /* ===== B형 감성 잡지: 대표 기사 ===== */
+
+#results .hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid #ecebea;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(40, 55, 70, 0.08);
+  cursor: pointer;
+}
+
+#results .hero .thumb {
+  width: 100%;
+  min-height: 340px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+#results .hero .thumb img,
+#results .hero .thumb .noimg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#results .hero .leadtext {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 36px;
+}
+
+#results .hero .eyebrow {
+  color: #7397a8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#results .hero h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.4;
+  letter-spacing: -1px;
+}
+
+#results .hero .summary {
+  color: #7c8793;
+  line-height: 1.8;
+}
+
+#results .hero .more {
+  color: #527f9d;
+  font-weight: 700;
+}
+
+/* 모바일에서는 사진 위, 글 아래 */
+@media (max-width: 700px) {
+  #results .hero {
+    grid-template-columns: 1fr;
+  }
+
+  #results .hero .thumb {
+    min-height: 230px;
+    height: 230px;
+  }
+
+  #results .hero .leadtext {
+    padding: 24px;
+  }
+}
   </style>
   </head>
   <body>
