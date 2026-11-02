@@ -24,28 +24,50 @@ export function about(section = 'intro') {
       >
     </div>
   `;
- const reporters = `
-  <p class="about-eyebrow">OUR REPORTERS</p>
-  <h2>어린이 기자단 소개</h2>
-  <div class="about-line"></div>
 
-  <p>사이잇다를 만들어 가는 어린이 기자들을 소개합니다.</p>
-  <p>포스터를 클릭하면 크게 볼 수 있어요!</p>
+  const reporters = `
+    <p class="about-eyebrow">OUR REPORTERS</p>
+    <h2>어린이 기자단 소개</h2>
+    <div class="about-line"></div>
 
-  <div class="reporter-grid">
-    ${[1, 2, 3, 4, 5, 6].map(n => `
-      <a class="reporter-card"
-         href="/reporter-${n}.jpg"
-         target="_blank"
-         rel="noopener noreferrer">
-        <img src="/reporter-${n}.jpg"
-             alt="어린이 기자 ${n} 소개 포스터">
-        <strong>어린이 기자 ${n}</strong>
-        <span>포스터 크게 보기</span>
-      </a>
-    `).join('')}
-  </div>
-`;
+    <p>사이잇다를 만들어 가는 어린이 기자들을 소개합니다.</p>
+    <p>포스터를 클릭하면 크게 볼 수 있어요!</p>
+
+    <h3 style="margin-top:36px;">✏️ 편집부</h3>
+    <p>기사를 다듬고 신문을 완성하는 기자들</p>
+
+    <div class="reporter-grid">
+      ${[1, 2, 3].map(n => `
+        <a class="reporter-card"
+           href="/reporter-${n}.jpg"
+           target="_blank"
+           rel="noopener noreferrer">
+          <img src="/reporter-${n}.jpg"
+               alt="편집부 어린이 기자 ${n} 소개 포스터">
+          <strong>어린이 기자 ${n}</strong>
+          <span>포스터 크게 보기</span>
+        </a>
+      `).join('')}
+    </div>
+
+    <h3 style="margin-top:52px;">📷 취재부</h3>
+    <p>학교 곳곳의 이야기를 찾아 전하는 기자들</p>
+
+    <div class="reporter-grid">
+      ${[4, 5, 6].map(n => `
+        <a class="reporter-card"
+           href="/reporter-${n}.jpg"
+           target="_blank"
+           rel="noopener noreferrer">
+          <img src="/reporter-${n}.jpg"
+               alt="취재부 어린이 기자 ${n} 소개 포스터">
+          <strong>어린이 기자 ${n}</strong>
+          <span>포스터 크게 보기</span>
+        </a>
+      `).join('')}
+    </div>
+  `;
+
 $('#app').innerHTML = `
 <style>
         .reporter-grid {
