@@ -61,25 +61,34 @@ export function nav() {
       </button>
     `;
 
+ 
   $('#nav')
     .querySelectorAll('[data-cat]')
     .forEach(b => {
       b.onclick = () => {
         state.currentCat = b.dataset.cat;
-        location.hash = '/';
-        render();
+
+        if (route() === '/') {
+          render();
+        } else {
+          location.hash = '/';
+        }
       };
     });
 
-  
   // 사이를 잇는 사람들 소개 페이지 열기
   $('#aboutNav').onclick = () => {
-    if (route() === '/about/intro') {
-      render();
-    } else {
-      location.hash = '/about/intro';
-    }
+    location.hash = '/about/intro';
+    render();
   };
+
+
+  
+  // 사이를 잇는 사람들 소개 페이지 열기
+ $('#aboutNav').onclick = () => {
+  location.hash = '/about/intro';
+  render();
+};
 
   const authBtn = $('#authBtn');
   authBtn.hidden = Boolean(session) && !canWrite();
