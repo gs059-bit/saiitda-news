@@ -146,6 +146,14 @@ export async function logout() {
 }
 
 async function init() {
+  // 상단 로고를 누르면 전체기사로 돌아가기
+  document.querySelectorAll('a[href="#/"]').forEach(link => {
+    link.addEventListener('click', () => {
+      state.currentCat = ALL;
+      location.hash = '/';
+      render();
+    });
+  });
   // 학교 이름이 들어가는 곳(index.html의 data-school)은 모두 config.js의 schoolName을 따른다
   document.querySelectorAll('[data-school]').forEach(el => {
     el.textContent = school;
