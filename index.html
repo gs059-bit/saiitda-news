@@ -72,6 +72,118 @@
         transition: none;
       }
     }
+    /* ===== 사이잇다 B형 감성 잡지 디자인 ===== */
+
+/* 기사 카드 3열 배치 */
+#results .grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+  align-items: stretch;
+}
+
+/* 기사 카드 */
+#results .story {
+  min-width: 0;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #ecebea;
+  border-radius: 16px;
+  box-shadow: 0 5px 18px rgba(40, 55, 70, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+#results .story:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(40, 55, 70, 0.12);
+}
+
+/* 기사 사진 */
+#results .story .thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 0;
+  margin: 0;
+}
+
+#results .story .thumb img,
+#results .story .thumb .noimg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 기사 카테고리 */
+#results .story .eyebrow {
+  margin: 18px 18px 8px;
+  color: #6d91a6;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 기사 제목 */
+#results .story h3 {
+  margin: 0 18px 10px;
+  font-size: 19px;
+  line-height: 1.5;
+  letter-spacing: -0.5px;
+  overflow-wrap: anywhere;
+}
+
+/* 기사 요약 */
+#results .story .summary {
+  margin: 0 18px 14px;
+  color: #7c8793;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* 기자 이름과 날짜 */
+#results .story .meta {
+  margin: 0 18px 18px;
+  padding-top: 12px;
+  border-top: 1px solid #edf0f2;
+  color: #98a2ad;
+  font-size: 12px;
+}
+
+/* 카테고리별 기사 구역 */
+#results .catsec {
+  margin-top: 42px;
+}
+
+#results .cathead {
+  margin-bottom: 20px;
+}
+
+/* 태블릿 */
+@media (max-width: 900px) {
+  #results .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+/* 스마트폰 */
+@media (max-width: 600px) {
+  #results .grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  #results .story h3 {
+    font-size: 18px;
+  }
+}
+
+/* 움직임 최소화 설정 */
+@media (prefers-reduced-motion: reduce) {
+  #results .story {
+    transition: none;
+  }
+}
   </style>
   </head>
   <body>
