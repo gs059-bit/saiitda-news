@@ -11,6 +11,7 @@ import { articleView } from './views/article.js';
 import { dashboard } from './views/dashboard.js';
 import { editor, clearDrafts } from './views/editor.js';
 import { me } from './views/me.js';
+import { about } from './views/about.js';
 
 const routes = [
   [/^\/$/, home],
@@ -19,7 +20,8 @@ const routes = [
   [/^\/new$/, () => editor()],
   [/^\/edit\/([^/]*)/, id => editor(id)],
   [/^\/article\/([^/]*)/, id => articleView(id)],
-  [/^\/me$/, me]
+  [/^\/me$/, me],
+  [/^\/about(?:\/(intro|reporters))?\/?$/, about]
 ];
 
 const route = () => decodeURIComponent(location.hash.slice(1) || '/');
