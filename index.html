@@ -260,6 +260,76 @@
     padding: 24px;
   }
 }
+    /* ===== B형 잡지 디자인: 카테고리 제목 ===== */
+
+#results .catsec {
+  margin-top: 54px;
+}
+
+#results .cathead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 0 18px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e7e9ed;
+}
+
+#results .cathead h2 {
+  margin: 0 0 8px;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.35;
+}
+
+#results .cathead h2::before {
+  content: "✦";
+  color: #9cb9c8;
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+#results .cathead p {
+  margin: 0;
+  color: #87929d;
+  font-size: 13px;
+}
+
+#results .cathead [data-more] {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: 1px solid #dce4e9;
+  border-radius: 999px;
+  background: #fff;
+  color: #53758c;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+#results .cathead [data-more]:hover {
+  background: #edf5f8;
+  transform: translateX(3px);
+}
+
+@media (max-width: 600px) {
+  #results .cathead h2 {
+    font-size: 21px;
+  }
+
+  #results .cathead [data-more] {
+    padding: 8px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #results .cathead [data-more] {
+    transition: none;
+  }
+}
   </style>
   </head>
   <body>
