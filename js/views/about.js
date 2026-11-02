@@ -23,34 +23,86 @@ export function about(section = 'intro') {
         "
       >
     </div>
-
-  
   `;
-  const reporters = `
-    <p class="about-eyebrow">OUR REPORTERS</p>
-    <h2>어린이 기자단 소개</h2>
-    <div class="about-line"></div>
+ const reporters = `
+  <p class="about-eyebrow">OUR REPORTERS</p>
+  <h2>어린이 기자단 소개</h2>
+  <div class="about-line"></div>
 
-    <h3>사이잇다를 만드는 사람들</h3>
+  <p>사이잇다를 만들어 가는 어린이 기자들을 소개합니다.</p>
+  <p>포스터를 클릭하면 크게 볼 수 있어요!</p>
 
-    <p>
-      강서초등학교 어린이 기자단을 소개합니다!
-    </p>
-
-    <p>
-      우리 학교의 소식을 전하고,
-      세상을 새로운 시선으로 바라보는
-      어린이 기자들의 이야기를 만나보세요.
-    </p>
-
-    <div class="about-quote">
-      이곳에 어린이 기자들의 사진과
-      자기소개 카드가 들어갈 예정입니다.
-    </div>
-  `;
-
+  <div class="reporter-grid">
+    ${[1, 2, 3, 4, 5, 6].map(n => `
+      <a class="reporter-card"
+         href="/reporter-${n}.jpg"
+         target="_blank"
+         rel="noopener noreferrer">
+        <img src="/reporter-${n}.jpg"
+             alt="어린이 기자 ${n} 소개 포스터">
+        <strong>어린이 기자 ${n}</strong>
+        <span>포스터 크게 보기</span>
+      </a>
+    `).join('')}
+  </div>
+`;
 $('#app').innerHTML = `
 <style>
+        .reporter-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin-top: 28px;
+      }
+
+      .reporter-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        text-decoration: none;
+        color: #222;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+      }
+
+      .reporter-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .reporter-card img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+
+      .reporter-card strong {
+        text-align: center;
+        font-size: 15px;
+      }
+
+      .reporter-card span {
+        text-align: center;
+        font-size: 12px;
+        color: #777;
+      }
+
+      @media (max-width: 700px) {
+        .reporter-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .reporter-grid {
+          grid-template-columns: 1fr;
+        }
+      }
       .about-page {
         max-width: 1100px;
         margin: 0 auto;
