@@ -22,6 +22,44 @@
     <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.49.8?bundle" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/main.css" />
+  
+
+  <style>
+    #nav .image-menu-button {
+      padding: 0 !important;
+      border: 0 !important;
+      outline: none;
+      background: transparent !important;
+      box-shadow: none !important;
+      border-radius: 14px;
+      transition: transform 0.2s ease;
+    }
+
+    #nav .image-menu-button:hover {
+      transform: translateY(-4px) scale(1.04);
+    }
+
+    #nav .image-menu-button.selected img {
+      filter: drop-shadow(0 3px 4px rgba(35, 85, 150, 0.2));
+    }
+
+    #nav .image-menu-button:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 700px) {
+      #nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #nav .image-menu-button {
+        transition: none;
+      }
+    }
+  </style>
   </head>
   <body>
     <div class="utility">
