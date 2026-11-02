@@ -117,7 +117,7 @@ async function init() {
   $('#emblem').alt = `${school} 교표`;
   document.querySelector('meta[name=description]').content = `${school} 어린이 기자단 웹진 사이잇다`;
   $('#year').textContent = new Date().getFullYear();
-  $('#footContact').textContent = cfg.contact || '';
+  $('#footContact').textContent = '051-366-1900';
   $('#tagline').textContent = cfg.tagline || '';
   showWeather(); // 기다리지 않는다. 실패하면 날씨 칸만 숨겨진 채로 남는다
   // 홈은 데이터를 기다리지 않고 먼저 그린다(다른 화면은 로그인 정보가 필요해 기다린다)
