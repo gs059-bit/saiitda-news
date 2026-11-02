@@ -4,6 +4,12 @@ const fromDb = { admin: 'admin', teacher_admin: 'teacher', reporter: 'reporter' 
 export const viewRole = dbRole => fromDb[dbRole] || 'student';
 
 // 가입 신청 화면의 역할 → profiles.requested_role
-export const requestRole = { reporter: 'reporter', student: 'reader' };
+
+export const requestRole = {
+  teacher: 'teacher_admin',
+  reporter: 'reporter',
+  student: 'reader'
+};
+
 
 export const roleLabel = { admin: '관리자', teacher: '선생님', reporter: '학생 기자', student: '일반 학생' };
