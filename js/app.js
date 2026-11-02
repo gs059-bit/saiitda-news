@@ -73,12 +73,12 @@ export function nav() {
         data-cat="${esc(c)}"
         class="${route() === '/' && currentCat === c ? 'active' : ''}"
         aria-label="${esc(c)}"
-        style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;"
+       style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;display:block;"
       >
         <img
           src="/${menuImages[c] || 'menu-all.png'}"
           alt="${esc(c)}"
-          style="display:block;width:100%;height:auto;border-radius:12px;"
+         style="display:block;width:100%;aspect-ratio:900/560;object-fit:contain;border-radius:12px;"
         >
       </button>
     `).join('') + `
@@ -87,12 +87,12 @@ export function nav() {
         id="aboutNav"
         class="${route().startsWith('/about') ? 'active' : ''}"
         aria-label="사이를 잇는 사람들"
-        style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;"
+        style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;display:block;"
       >
         <img
           src="/menu-people.png"
           alt="사이를 잇는 사람들"
-          style="display:block;width:100%;height:auto;border-radius:12px;"
+          style="display:block;width:100%;aspect-ratio:900/560;object-fit:contain;border-radius:12px;"
         >
       </button>
     `;
