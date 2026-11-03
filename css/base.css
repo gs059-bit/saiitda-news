@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
 /* 모든 페이지 공통: 색상·글꼴 변수와 기본 스타일 */
 :root {
   --ink: #17191d;
@@ -6,8 +7,8 @@
   --blue: #0067bd; /* 관리자 디자인 설정의 강조 색상이 덮어쓴다 */
   --paper: #fff;
   --soft: #f5f6f7;
-  --sans: 'Apple SD Gothic Neo', 'Malgun Gothic', Arial, sans-serif;
-  --serif: Georgia, 'Malgun Gothic', serif;
+  --sans: 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif;
+  --serif: 'Jua', 'Gowun Dodum', 'Malgun Gothic', sans-serif;
 }
 
 * {
@@ -50,4 +51,9 @@ a {
 }
 .back:hover {
   color: var(--blue);
+}
+/* 사이잇다 전체 글꼴 통일 */
+body,
+body *:not(svg):not(svg *):not(i):not([class*="icon"]) {
+  font-family: var(--sans) !important;
 }
