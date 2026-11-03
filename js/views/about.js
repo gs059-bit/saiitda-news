@@ -6,24 +6,84 @@ import { $ } from '../utils.js';
 
 export function about(section = 'intro') {
   const page = section === 'reporters' ? 'reporters' : 'intro';
-  const intro = `
-    <p class="about-eyebrow">ABOUT SAIITDA</p>
-    <h2>사이잇다란?</h2>
+ const intro = `
+  <p class="about-eyebrow">ABOUT SAIITDA</p>
+  <h2>사이잇다란?</h2>
 
-    <div style="margin-top:28px; text-align:center;">
+  <div style="
+    width:100%;
+    max-width:900px;
+    margin:28px auto 0;
+    padding:90px 15px 80px;
+    background:transparent;
+    font-family:'Gowun Dodum','Malgun Gothic',sans-serif;
+    color:#40372e;
+  ">
+
+    <div style="max-width:480px;margin:0 auto;">
+
+      <p style="
+        text-align:center;
+        font-size:15px;
+        font-weight:700;
+        margin:0 0 5px;
+        line-height:1.5;
+      ">
+        - 우리 사이의 이야기를 찾아, 세상과 잇다 -
+      </p>
+
       <img
-        src="/saiitda-intro.png"
-        alt="사이잇다 소개 자료 전체"
+        src="/saiitda-about-logo.png"
+        alt="사이잇다 로고"
         style="
           display:block;
           width:100%;
-          max-width:900px;
+          max-width:420px;
           height:auto;
-          margin:0 auto;
+          margin:0 auto 50px;
         "
       >
+
+      <div style="
+        font-size:14px;
+        line-height:1.75;
+        text-align:left;
+        font-weight:400;
+      ">
+
+        <p style="margin:0 0 22px;">
+          ‘사이’는 학교 안의 다양한 관계와 공간을 뜻합니다.
+          학생과 학생 사이, 학생과 선생님 사이,
+          학교와 가정 사이, 학교와 마을 사이,
+          그리고 오늘과 미래 사이를 의미합니다.
+        </p>
+
+        <p style="margin:0 0 22px;">
+          ‘잇다’는 그 사이를 이야기와 기록으로 연결한다는
+          뜻입니다. 학생기자들이 학교 곳곳을 살펴보고,
+          사람을 만나고, 질문하고, 그 속에서 발견한
+          이야기를 기사로 전하면서 서로를 이어 줍니다.
+        </p>
+
+        <p style="margin:0 0 4px;">
+          따라서 「사이 잇다」에는
+        </p>
+
+        <p style="
+          margin:0;
+          font-size:15px;
+          font-weight:700;
+          line-height:1.7;
+        ">
+          우리 사이의 이야기를 발견하고,<br>
+          사람과 사람을 잇고,<br>
+          오늘의 강서초를 기록하여 미래로 잇는다.
+        </p>
+
+      </div>
     </div>
-  `;
+  </div>
+`;
 
   const reporters = `
     <p class="about-eyebrow">OUR REPORTERS</p>
