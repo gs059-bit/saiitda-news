@@ -75,8 +75,13 @@ body *:not(svg):not(svg *):not(i):not([class*="icon"]) {
   font-family: 'Gowun Dodum', 'Malgun Gothic', sans-serif !important;
 }
 
-/* 카테고리 제목, 설명, 기사 수 */
-#app .page-head h1,
+/* 큰 제목: 고운돋움 + 볼드체 */
+#app .page-head h1 {
+  font-family: 'Gowun Dodum', 'Malgun Gothic', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* 부제목과 기사 수: 고운돋움 + 일반 굵기 */
 #app .page-head .catdesc,
 #app .page-head #count {
   font-family: 'Gowun Dodum', 'Malgun Gothic', sans-serif !important;
