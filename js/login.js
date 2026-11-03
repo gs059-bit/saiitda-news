@@ -56,8 +56,28 @@ async function login(e) {
   };
   btn.disabled = true;
   const want = $('input[name=role]:checked').value;
+   // 아이디 또는 이메일 입력값
+  const loginId = $('#email').value.trim();
+
+  let loginEmail;
+
+  if (loginId.includes('@')) {
+    // 기존 관리자 및 이메일 계정
+    loginEmail = loginId;
+  } else {
+    // 학생 아이디를 내부 인증용 이메일로 변환
+    const username = loginId.toLowerCase();
+
+    if (!/^[a-z0-9_]{4,20}$/.test(username)) {
+      fail('아이디는 영문 소문자, 숫자, 밑줄(_)을 사용해 4~20자로 입력해 주세요.');
+      return;
+    }
+
+    loginEmail = `${username}@students.saiitda.invalid`;
+  }
+
   const { data, error } = await db.auth.signInWithPassword({
-    email: $('#email').value.trim(),
+    email: loginEmail,
     password: $('#password').value
   });
   if (error) {
