@@ -40,10 +40,13 @@ function view() {
 
  // 선생님도 학생 기자, 일반 학생과 동일하게 가입 신청할 수 있다.
  // 실제 계정 권한은 최고 관리자가 승인한 뒤 부여된다.
-function toggleTeacherNote() {
-  $('#teacherNote').classList.add('hide');
-  $('#signupFields').classList.remove('hide');
-  $('#signupFields').disabled = false;
+  const teacher = document.querySelector(
+    'input[name=srole]:checked'
+  )?.value === 'teacher';
+
+  $('#teacherNote').classList.toggle('hide', !teacher);
+  $('#signupFields').classList.toggle('hide', teacher);
+  $('#signupFields').disabled = teacher;
 }
 
 async function login(e) {
@@ -81,7 +84,7 @@ async function login(e) {
     password: $('#password').value
   });
   if (error) {
-    fail('로그인할 수 없습니다. 이메일과 비밀번호를 확인해 주세요. 가입 직후라면 이메일 인증을 먼저 완료해 주세요.');
+    fail('로그인할 수 없습니다. 아이디와 비밀번호를 확인해 주세요. 가입 승인 상태도 확인해 주세요.');
     return;
   }
   const { role, status } = await account(data.user.id);
@@ -100,40 +103,98 @@ async function login(e) {
   go(role);
 }
 
+
 async function signup(e) {
   e.preventDefault();
   $('#smsg').replaceChildren();
+
   const name = $('#sname').value.trim();
-  const email = $('#semail').value.trim();
+  const username = $('#susername').value.trim().toLowerCase();
   const password = $('#spass').value;
+  const inviteCode = $('#scode').value.trim();
+  const selectedRole =
+    document.querySelector('input[name=srole]:checked')?.value;
+
+  if (!['student', 'reporter'].includes(selectedRole)) {
+    showMessage('#smsg', '학생 가입 유형을 선택해 주세요.');
+    return;
+  }
+
+  if (!/^[a-z0-9_]{4,20}$/.test(username)) {
+    showMessage('#smsg', '아이디는 영문 소문자, 숫자, 밑줄(_)로 4~20자여야 합니다.');
+    return;
+  }
+
+  if (name.length < 2 || name.length > 20) {
+    showMessage('#smsg', '이름은 2~20자로 입력해 주세요.');
+    return;
+  }
+
+  if (password.length < 8 || password.length > 128) {
+    showMessage('#smsg', '비밀번호는 8~128자로 입력해 주세요.');
+    return;
+  }
+
   if (password !== $('#spass2').value) {
-    showMessage('#smsg', '비밀번호와 비밀번호 확인이 서로 다릅니다.');
+    showMessage('#smsg', '비밀번호 확인이 일치하지 않습니다.');
     return;
   }
-  const btn = $('#signupform button');
+
+  if (!inviteCode) {
+    showMessage('#smsg', '가입 초대 코드를 입력해 주세요.');
+    return;
+  }
+
+  const btn = $('#signupform button[type=submit]');
   btn.disabled = true;
-  // requested_role은 관리자가 참고할 신청 정보일 뿐, 실제 권한은 profiles.role로만 정해진다
-  const { data, error } = await db.auth.signUp({
-    email,
-    password,
-    options: { data: { display_name: name, requested_role: requestRole[$('input[name=srole]:checked').value] } }
-  });
-  btn.disabled = false;
-  if (error) {
-    showMessage('#smsg', `가입할 수 없습니다. (${error.message})`);
-    return;
+
+  try {
+    const { data, error } = await db.functions.invoke(
+      'student-register',
+      {
+        body: {
+          username,
+          password,
+          display_name: name,
+          requested_role: requestRole[selectedRole],
+          invite_code: inviteCode
+        }
+      }
+    );
+
+    if (error) {
+      let message = '가입 요청을 처리하지 못했습니다.';
+
+      try {
+        const details = await error.context?.json();
+        if (details?.error) message = details.error;
+      } catch (_) {}
+
+      showMessage('#smsg', message);
+      return;
+    }
+
+    if (!data?.ok) {
+      showMessage('#smsg', data?.error || '가입 처리 결과를 확인할 수 없습니다.');
+      return;
+    }
+
+    $('#signupform').reset();
+    toggleTeacherNote();
+
+    showMessage(
+      '#smsg',
+      '가입 신청이 접수되었습니다. 관리자 승인 후 로그인할 수 있습니다.',
+      true
+    );
+  } catch (error) {
+    console.error('가입 요청 오류:', error);
+    showMessage('#smsg', '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    btn.disabled = false;
   }
-  if (data.session) await db.auth.signOut();
-  $('#signupform').reset();
-  toggleTeacherNote();
-  showMessage(
-    '#smsg',
-    data.session
-      ? '가입 신청이 완료되었습니다. 관리자가 승인하면 로그인할 수 있어요.'
-      : '가입 신청이 완료되었습니다. 이메일로 보낸 인증 링크를 누르고, 관리자가 승인하면 로그인할 수 있어요.',
-    true
-  );
 }
+
 
 // Supabase 대시보드의 Authentication → URL Configuration → Redirect URLs에 이 주소가 등록되어 있어야 한다
 async function forgot(e) {
