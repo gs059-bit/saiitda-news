@@ -45,7 +45,15 @@
           <button class="btn" type="submit">로그인</button>
           <div id="msg" role="alert"></div>
         </form>
-        <p class="switch">아직 계정이 없나요? <a href="#signup">회원가입</a></p>
+        
+<p class="switch">
+  아직 계정이 없나요?
+  <a href="#signup"
+     onclick="document.getElementById('loginView').classList.add('hide'); document.getElementById('signupView').classList.remove('hide');">
+    회원가입
+  </a>
+</p>
+
         <p class="switch">비밀번호를 잊었나요? <a href="#forgot">비밀번호 찾기</a></p>
       </section>
 
