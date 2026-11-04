@@ -24,9 +24,10 @@ const commentState = {
 };
 
 // 기사 본문에 삽입된 사진을 실제 이미지로 표시
+
 function renderArticleBody(body) {
   const source = String(body || '');
-  const marker = /\[\[사진:(https:\/\/[^\]\s]+)\]\]/g;
+  const marker = /\[\[사진:\s*(https:\/\/[^\]\s]+)\s*\]\]/g;
 
   let html = '';
   let last = 0;
@@ -40,32 +41,19 @@ function renderArticleBody(body) {
     try {
       const u = new URL(url);
 
-      const expected = new URL(
-        db.storage
-          .from('article-images')
-          .getPublicUrl('__check__.jpg')
-          .data.publicUrl
-      );
-
-      const prefix = expected.pathname.slice(
-        0,
-        -'__check__.jpg'.length
-      );
-
       allowed =
         u.protocol === 'https:' &&
-        u.origin === expected.origin &&
-        u.pathname.startsWith(prefix);
+        u.hostname.endsWith('.supabase.co') &&
+        u.pathname.includes(
+          '/storage/v1/object/public/article-images/'
+        );
     } catch {
-      // 잘못된 주소는 이미지로 표시하지 않는다.
+      allowed = false;
     }
 
-    html += allowed
-      ? `<figure style="
-          margin:22px 0;
-          text-align:center;
-          white-space:normal;
-        ">
+    if (allowed) {
+      html += `
+        <figure style="margin:24px 0;text-align:center;white-space:normal;">
           <img
             src="${esc(url)}"
             alt="기사 본문 사진"
@@ -73,21 +61,25 @@ function renderArticleBody(body) {
             style="
               display:block;
               max-width:100%;
-              width:auto;
               height:auto;
-              max-height:900px;
               margin:0 auto;
               border-radius:8px;
             "
           >
-        </figure>`
-      : esc(match[0]);
+        </figure>
+      `;
+    } else {
+      html += esc(match[0]);
+    }
 
     last = match.index + match[0].length;
   }
 
-  return html + esc(source.slice(last));
+  html += esc(source.slice(last));
+
+  return html;
 }
+
 
 // 기사 읽기 화면
 export function articleView(id) {
