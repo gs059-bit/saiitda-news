@@ -105,21 +105,3 @@ body *:not(svg):not(svg *):not(i):not([class*="icon"]) {
   font-weight: 400 !important;
 }
 
-
-/* ===== 흰색 배경 테스트 시작 ===== */
-
-html,
-body,
-#app,
-#workspace {
-  background-color: #ffffff !important;
-  background-image: none !important;
-}
-
-body::before,
-body::after {
-  background-image: none !important;
-}
-
-/* ===== 흰색 배경 테스트 끝 ===== */
-
