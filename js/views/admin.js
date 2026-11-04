@@ -287,34 +287,96 @@ export async function passwordRequests(issued) {
 }
 
 // 승인된(또는 막힌) 회원 목록. 학생 기자 ↔ 일반 학생, 로그인 막기·다시 허용은 DB 함수 set_member()로 한다
+
 export async function members() {
   if (!isAdmin()) return;
+
   const ws = $('#workspace');
   ws.innerHTML = '<h2>회원 관리</h2><p class="muted">불러오는 중…</p>';
+
   const { data, error } = await db
     .from('profiles')
-    .select('id,display_name,username,role,approval_status,created_at')
+    .select('id,display_name,username,role,is_super_admin,approval_status,created_at')
+    .is('deleted_at', null)
     .or('approval_status.is.null,approval_status.neq.pending')
     .order('display_name');
+
   if (error) {
     ws.innerHTML = `<h2>회원 관리</h2>${notice(errorText(error), true)}`;
     return;
   }
-  ws.innerHTML = `<h2>회원 관리 (${data.length})</h2>
-    <p class="muted">학생 기자와 일반 학생 사이를 바꾸거나, 졸업·전학한 학생의 로그인을 막을 수 있습니다. 관리자·선생님 계정은 Supabase에서 직접 지정합니다.</p>
-    ${data.length ? data.map(memberItem).join('') : '<p class="muted">회원이 없습니다.</p>'}`;
 
+  ws.innerHTML = `<h2>회원 관리 (${data.length})</h2>
+    <p class="muted">
+      학생 기자와 일반 학생의 권한을 변경하거나,
+      로그인을 막고 학생 계정을 삭제할 수 있습니다.
+      계정을 삭제해도 작성한 기사와 댓글은 남습니다.
+      관리자·선생님 계정은 보호됩니다.
+    </p>
+    ${
+      data.length
+        ? data.map(memberItem).join('')
+        : '<p class="muted">회원이 없습니다.</p>'
+    }`;
+
+  // 기존 회원 권한 변경 기능
   onClick(
     '[data-member]',
     async b => {
       if (!confirm(b.dataset.ask)) return;
+
       const { error } = await db.rpc('set_member', {
         target: b.dataset.member,
         new_role: b.dataset.role,
         new_status: b.dataset.status
       });
+
       if (error) alert(errorText(error));
       else members();
+    },
+    ws
+  );
+
+  // 학생 계정 삭제 기능
+  onClick(
+    '[data-delete-student]',
+    async b => {
+      const name = b.dataset.name || '이 학생';
+
+      if (!confirm(
+        `${name} 학생의 계정을 삭제할까요?\n\n` +
+        '기존 아이디로 로그인할 수 없게 됩니다.\n' +
+        '작성한 기사와 댓글은 남습니다.'
+      )) return;
+
+      const answer = prompt(
+        '실수로 삭제하지 않도록 "삭제"라고 입력해 주세요.'
+      );
+
+      if (answer !== '삭제') return;
+
+      b.disabled = true;
+
+      const { data, error } = await db.functions.invoke(
+        'delete-student-account',
+        {
+          body: {
+            target_id: b.dataset.deleteStudent
+          }
+        }
+      );
+
+      if (error || !data?.success) {
+        alert(
+          data?.error ||
+          '계정 삭제에 실패했습니다. 관리자에게 확인해 주세요.'
+        );
+        b.disabled = false;
+        return;
+      }
+
+      alert(`${name} 학생의 로그인 계정이 삭제 처리되었습니다.`);
+      members();
     },
     ws
   );
@@ -322,24 +384,81 @@ export async function members() {
 
 function memberItem(p) {
   const blocked = p.approval_status === 'rejected';
-  const fixed = ['admin', 'teacher_admin'].includes(p.role);
+
+  const fixed =
+    ['admin', 'teacher_admin', 'super_admin'].includes(p.role) ||
+    p.is_super_admin === true;
+
   const role = p.role === 'reporter' ? 'reporter' : 'reader';
   const status = blocked ? 'rejected' : 'approved';
-  const button = (label, newRole, newStatus, ask, kind = 'secondary') =>
-    `<button class="btn ${kind}" data-member="${p.id}" data-role="${newRole}" data-status="${newStatus}" data-ask="${esc(ask)}">${label}</button>`;
-  const actions = fixed
-    ? '<span class="small muted">Supabase에서 지정</span>'
-    : (role === 'reporter'
-        ? button('일반 학생으로', 'reader', status, '이 회원을 일반 학생으로 바꿀까요? 기사를 쓸 수 없게 됩니다.')
-        : button('학생 기자로', 'reporter', status, '이 회원을 학생 기자로 바꿀까요?')) +
+
+  const button = (
+    label,
+    newRole,
+    newStatus,
+    ask,
+    kind = 'secondary'
+  ) =>
+    `<button class="btn ${kind}"
+      data-member="${p.id}"
+      data-role="${newRole}"
+      data-status="${newStatus}"
+      data-ask="${esc(ask)}">${label}</button>`;
+
+  let actions;
+
+  if (fixed) {
+    actions = '<span class="small muted">Supabase에서 지정</span>';
+  } else {
+    actions =
+      (role === 'reporter'
+        ? button(
+            '일반 학생으로',
+            'reader',
+            status,
+            '이 회원을 일반 학생으로 바꿀까요?'
+          )
+        : button(
+            '학생 기자로',
+            'reporter',
+            status,
+            '이 회원을 학생 기자로 바꿀까요?'
+          )
+      ) +
       (blocked
-        ? button('다시 허용', role, 'approved', '이 회원이 다시 로그인할 수 있게 할까요?')
-        : button('로그인 막기', role, 'rejected', '이 회원의 로그인을 막을까요? 쓴 기사와 댓글은 남습니다.', 'danger'));
+        ? button(
+            '다시 허용',
+            role,
+            'approved',
+            '이 회원이 다시 로그인할 수 있게 할까요?'
+          )
+        : button(
+            '로그인 막기',
+            role,
+            'rejected',
+            '이 회원의 로그인을 막을까요?',
+            'danger'
+          )
+      ) +
+      `<button
+        class="btn secondary"
+        style="border-color:#b42318;color:#b42318"
+        data-delete-student="${p.id}"
+        data-name="${esc(p.display_name || '이름 없음')}">
+        계정 삭제
+      </button>`;
+  }
+
   return `<div class="entry">
     <div>
-      <span class="status">${blocked ? '로그인 막힘' : roleLabel[viewRole(p.role)]}</span>
+      <span class="status">
+        ${blocked ? '로그인 막힘' : roleLabel[viewRole(p.role)]}
+      </span>
       <h3>${esc(p.display_name || '이름 없음')}</h3>
-      <div class="meta">${p.username ? esc(p.username) + ' · ' : ''}가입 ${date(p.created_at)}</div>
+      <div class="meta">
+        ${p.username ? esc(p.username) + ' · ' : ''}
+        가입 ${date(p.created_at)}
+      </div>
     </div>
     <div class="actions">${actions}</div>
   </div>`;
