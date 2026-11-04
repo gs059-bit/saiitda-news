@@ -23,6 +23,23 @@ body {
   margin: 0;
   color: var(--ink);
   font-family: var(--sans);
+  /* 한글은 낱말(띄어쓰기) 단위로 줄을 바꿔 한 글자만 아래로 내려가지 않게 한다.
+     너무 긴 낱말(주소 등)은 칸을 넘지 않게 따로 자른다 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+/* 문단 끝에 낱말 하나만 남지 않게 줄 길이를 고르게 맞춘다(지원하는 브라우저에서만) */
+p,
+.hint,
+.notice,
+.summary,
+li {
+  text-wrap: pretty;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 button,
 input,

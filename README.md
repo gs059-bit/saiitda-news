@@ -31,7 +31,7 @@ npm run lint     # ESLint만
 | 바꾸는 것 | 고칠 곳 |
 |---|---|
 | 학교 이름·문의처·소개 문구 | `config.js` (화면의 학교 이름은 모두 여기서 채워진다). 단, `privacy.html` 본문과 `index.html`의 `og:` 공유 미리보기 태그는 직접 고친다 |
-| 사이트 주소(도메인) | `index.html`의 `og:url`·`og:image`, Supabase 대시보드 Authentication → URL Configuration의 Site URL·Redirect URLs(`https://<주소>/login.html?reset=1`, 비밀번호 재설정에 필요) |
+| 사이트 주소(도메인) | `index.html`의 `og:url`·`og:image`, Supabase 대시보드 Authentication → URL Configuration의 Site URL |
 | 공유 미리보기 이미지 | `og-image.jpg` (1200×630). 바꾼 뒤 카카오 공유 디버거에서 캐시를 지운다 |
 | Supabase 프로젝트 | `config.js`의 `supabaseUrl`·`supabaseAnonKey`, `index.html`·`login.html`의 `preconnect` 주소, `vercel.json` CSP의 Supabase 주소(3곳) |
 | 날씨 위치 | `config.js`의 `weather` (위도·경도·이름). 지우면 날씨가 표시되지 않는다 |
@@ -84,3 +84,15 @@ database/            Supabase SQL Editor에서 실행한 변경 스크립트
 | 일반 학생 | `reader` (그 밖) | 읽기·댓글 |
 
 실제 권한은 Supabase RLS 정책이 지킨다. 화면의 권한 확인은 버튼을 숨기는 용도일 뿐이다.
+
+## 비밀번호 재설정 (아이디로 가입한 학생)
+
+비밀번호는 메일로 찾지 않는다. 아이디 가입 회원은 관리자에게 요청해 이렇게 재설정한다.
+학생이 로그인 화면 "비밀번호 찾기"에서 아이디로 요청 → 최고 관리자가 기자실 "비밀번호 재설정"에서 임시 비밀번호 발급 → 학생에게 직접 전달 → 학생이 임시 비밀번호로 로그인하면 새 비밀번호를 정한다.
+
+처음 한 번 설정이 필요하다.
+
+1. Supabase SQL Editor에서 `database/password-reset.sql` 실행 (`database/admin-tools.sql`을 먼저 실행해 두어야 한다)
+2. Edge Function 배포 (Supabase CLI): `supabase functions deploy reset-student-password --project-ref <프로젝트 ID>`
+   - 함수 안에서 `SUPABASE_SERVICE_ROLE_KEY`를 쓰지만 Supabase가 자동으로 넣어 준다. 이 키를 코드나 저장소에 적지 않는다.
+

@@ -17,6 +17,11 @@ function showMessage(target, msg, ok = false) {
   $(target).replaceChildren(d);
 }
 
+// 아이디로 가입·로그인하는 계정은 내부 인증용 이메일(아이디@students.saiitda.invalid)로 바꿔 Supabase에 보낸다
+const USERNAME_RE = /^[a-z0-9_]{4,20}$/;
+const USERNAME_MSG = '아이디는 영문 소문자, 숫자, 밑줄(_)을 사용해 4~20자로 입력해 주세요.';
+const usernameEmail = username => `${username}@students.saiitda.invalid`;
+
 // 프로필이 없으면 승인 대기로, 승인 상태가 비어 있으면 승인된 것으로 본다
 async function account(id) {
   const { data } = await db.from('profiles').select('role,approval_status').eq('id', id).maybeSingle();
@@ -27,8 +32,8 @@ function go(role) {
   location.href = ['admin', 'reporter'].includes(role) ? 'index.html#/dashboard' : 'index.html';
 }
 
-// 비밀번호 재설정 메일의 링크는 login.html?reset=1#access_token=... 으로 들어온다
-let resetMode = new URLSearchParams(location.search).has('reset');
+// 관리자가 임시 비밀번호를 발급한 계정이 로그인하면 켜져서, 새 비밀번호 정하기 화면을 보여 준다
+let resetMode = false;
 
 const views = { '': '#loginView', '#signup': '#signupView', '#forgot': '#forgotView', '#reset': '#resetView' };
 
@@ -56,24 +61,24 @@ async function login(e) {
   };
   btn.disabled = true;
   const want = $('input[name=role]:checked').value;
-   // 아이디 또는 이메일 입력값
+  // 학생은 아이디, 기존 관리자 계정은 이메일을 그대로 입력한다
   const loginId = $('#email').value.trim();
 
   let loginEmail;
 
   if (loginId.includes('@')) {
-    // 기존 관리자 및 이메일 계정
+    // 기존 관리자 계정(이메일)
     loginEmail = loginId;
   } else {
     // 학생 아이디를 내부 인증용 이메일로 변환
     const username = loginId.toLowerCase();
 
-    if (!/^[a-z0-9_]{4,20}$/.test(username)) {
-      fail('아이디는 영문 소문자, 숫자, 밑줄(_)을 사용해 4~20자로 입력해 주세요.');
+    if (!USERNAME_RE.test(username)) {
+      fail(USERNAME_MSG);
       return;
     }
 
-    loginEmail = `${username}@students.saiitda.invalid`;
+    loginEmail = usernameEmail(username);
   }
 
   const { data, error } = await db.auth.signInWithPassword({
@@ -81,7 +86,7 @@ async function login(e) {
     password: $('#password').value
   });
   if (error) {
-    fail('로그인할 수 없습니다. 이메일과 비밀번호를 확인해 주세요. 가입 직후라면 이메일 인증을 먼저 완료해 주세요.');
+    fail('로그인할 수 없습니다. 아이디와 비밀번호를 확인해 주세요.');
     return;
   }
   const { role, status } = await account(data.user.id);
@@ -97,6 +102,13 @@ async function login(e) {
     );
     return;
   }
+  // 관리자가 임시 비밀번호를 발급한 계정은 새 비밀번호를 정해야 들어갈 수 있다
+  if (data.user.user_metadata?.must_change_password) {
+    resetMode = true;
+    view();
+    showMessage('#rmsg', '임시 비밀번호로 로그인했습니다. 사용할 새 비밀번호를 정해 주세요.', true);
+    return;
+  }
   go(role);
 }
 
@@ -104,7 +116,11 @@ async function signup(e) {
   e.preventDefault();
   $('#smsg').replaceChildren();
   const name = $('#sname').value.trim();
-  const email = $('#semail').value.trim();
+  const username = $('#semail').value.trim().toLowerCase();
+  if (!USERNAME_RE.test(username)) {
+    showMessage('#smsg', USERNAME_MSG);
+    return;
+  }
   const password = $('#spass').value;
   if (password !== $('#spass2').value) {
     showMessage('#smsg', '비밀번호와 비밀번호 확인이 서로 다릅니다.');
@@ -114,13 +130,18 @@ async function signup(e) {
   btn.disabled = true;
   // requested_role은 관리자가 참고할 신청 정보일 뿐, 실제 권한은 profiles.role로만 정해진다
   const { data, error } = await db.auth.signUp({
-    email,
+    email: usernameEmail(username),
     password,
-    options: { data: { display_name: name, requested_role: requestRole[$('input[name=srole]:checked').value] } }
+    options: { data: { display_name: name, username, requested_role: requestRole[$('input[name=srole]:checked').value] } }
   });
   btn.disabled = false;
   if (error) {
-    showMessage('#smsg', `가입할 수 없습니다. (${error.message})`);
+    showMessage(
+      '#smsg',
+      /already|registered/i.test(error.message)
+        ? '이미 사용 중인 아이디입니다. 다른 아이디를 입력해 주세요.'
+        : `가입할 수 없습니다. (${error.message})`
+    );
     return;
   }
   if (data.session) await db.auth.signOut();
@@ -128,30 +149,31 @@ async function signup(e) {
   toggleTeacherNote();
   showMessage(
     '#smsg',
-    data.session
-      ? '가입 신청이 완료되었습니다. 관리자가 승인하면 로그인할 수 있어요.'
-      : '가입 신청이 완료되었습니다. 이메일로 보낸 인증 링크를 누르고, 관리자가 승인하면 로그인할 수 있어요.',
+    '가입 신청이 완료되었습니다. 관리자가 승인하면 아이디와 비밀번호로 로그인할 수 있어요.',
     true
   );
 }
 
-// Supabase 대시보드의 Authentication → URL Configuration → Redirect URLs에 이 주소가 등록되어 있어야 한다
+// 비밀번호 찾기: 아이디로 관리자에게 재설정을 요청한다(없는 아이디여도 같은 안내를 보여 준다)
 async function forgot(e) {
   e.preventDefault();
   const btn = $('#forgotform button');
+  const username = $('#femail').value.trim().toLowerCase();
+  if (!USERNAME_RE.test(username)) {
+    showMessage('#fmsg', USERNAME_MSG);
+    return;
+  }
   btn.disabled = true;
-  const { error } = await db.auth.resetPasswordForEmail($('#femail').value.trim(), {
-    redirectTo: new URL('login.html?reset=1', location.href).href
-  });
+  const { error } = await db.rpc('request_password_reset', { p_username: username });
   btn.disabled = false;
   if (error) {
-    showMessage('#fmsg', `메일을 보낼 수 없습니다. 잠시 뒤 다시 시도해 주세요. (${error.message})`);
+    showMessage('#fmsg', `요청할 수 없습니다. 잠시 뒤 다시 시도해 주세요. (${error.message})`);
     return;
   }
   $('#forgotform').reset();
   showMessage(
     '#fmsg',
-    '가입된 이메일이라면 비밀번호 재설정 링크가 도착합니다. 메일이 보이지 않으면 스팸함도 확인해 주세요.',
+    '재설정을 요청했어요. 관리자가 확인하면 임시 비밀번호를 알려 줄 거예요. 임시 비밀번호로 로그인하면 새 비밀번호를 정할 수 있어요.',
     true
   );
 }
@@ -165,16 +187,15 @@ async function resetPassword(e) {
   }
   const btn = $('#resetform button');
   btn.disabled = true;
-  const { error } = await db.auth.updateUser({ password });
+  const { error } = await db.auth.updateUser({ password, data: { must_change_password: false } });
   btn.disabled = false;
   if (error) {
     showMessage('#rmsg', `비밀번호를 바꿀 수 없습니다. (${error.message})`);
     return;
   }
-  // 재설정 링크로 만들어진 로그인은 끊고, 새 비밀번호로 직접 로그인하게 한다
+  // 임시 비밀번호로 만들어진 로그인은 끊고, 새 비밀번호로 직접 로그인하게 한다
   await db.auth.signOut();
   resetMode = false;
-  history.replaceState(null, '', location.pathname);
   view();
   showMessage('#msg', '비밀번호를 바꿨습니다. 새 비밀번호로 로그인해 주세요.', true);
 }
@@ -199,14 +220,6 @@ async function init() {
   }
   // 이미 로그인되어 있으면 바로 이동, 승인 전 계정이면 로그아웃
   const { data } = await db.auth.getSession();
-  // 재설정 링크로 들어오면 그 로그인으로 기자실에 넘어가지 않고 새 비밀번호부터 받는다
-  if (resetMode) {
-    if (!data.session) {
-      $('#resetFields').disabled = true;
-      showMessage('#rmsg', '링크가 만료되었거나 이미 사용되었습니다. 아래에서 링크를 다시 받아 주세요.');
-    }
-    return;
-  }
   if (!data.session) return;
   const acc = await account(data.session.user.id);
   if (acc.status === 'approved') go(acc.role);

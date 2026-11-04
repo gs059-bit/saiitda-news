@@ -59,8 +59,9 @@ export function nav() {
 
   // 모든 카테고리를 동일한 크기의 이미지 버튼으로 표시
   $('#nav').style.cssText = `
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 14px;
     max-width: 1080px;
     margin: 0 auto;
@@ -75,7 +76,7 @@ export function nav() {
         data-cat="${esc(c)}"
         class="image-menu-button ${route() === '/' && currentCat === c ? 'selected' : ''}"
         aria-label="${esc(c)}"
-       style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;display:block;"
+       style="padding:0;border:0;background:transparent;cursor:pointer;display:block;"
       >
         <img
           src="/${menuImages[c] || 'menu-all.png'}"
@@ -89,7 +90,7 @@ export function nav() {
         id="aboutNav"
        class="image-menu-button ${route().startsWith('/about') ? 'selected' : ''}"
         aria-label="사이를 잇는 사람들"
-        style="padding:0;border:0;background:transparent;cursor:pointer;width:100%;display:block;"
+        style="padding:0;border:0;background:transparent;cursor:pointer;display:block;"
       >
         <img
           src="/menu-people.png"

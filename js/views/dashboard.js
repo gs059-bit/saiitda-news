@@ -3,7 +3,7 @@ import { db } from '../supabase.js';
 import { $, esc, date, errorText, onClick } from '../utils.js';
 import { state, isAdmin, canWrite, isMine, loadArticles } from '../state.js';
 import { notice } from '../ui.js';
-import { categoryEditor, designEditor, signupRequests, members } from './admin.js';
+import { categoryEditor, designEditor, signupRequests, members, passwordRequests } from './admin.js';
 import { removePhoto } from './editor.js';
 import { articleStats } from '../stats.js';
 
@@ -55,7 +55,8 @@ export function dashboard() {
             ? `<button id="catsTab">카테고리 관리</button>
         <button id="designTab">사이트 디자인 설정</button>
         <button id="usersTab">가입 승인</button>
-        <button id="membersTab">회원 관리</button>`
+        <button id="membersTab">회원 관리</button>
+        <button id="resetTab">비밀번호 재설정</button>`
             : ''
         }
         <p class="small muted">기사 발행 전 관리자 승인이 필요합니다.</p>
@@ -75,6 +76,7 @@ export function dashboard() {
     $('#designTab').onclick = designEditor;
     $('#usersTab').onclick = signupRequests;
     $('#membersTab').onclick = members;
+    $('#resetTab').onclick = () => passwordRequests();
     showSignupCount();
   }
   showStats();
@@ -93,6 +95,11 @@ async function showSignupCount() {
     .select('id', { count: 'exact', head: true })
     .eq('approval_status', 'pending');
   if (count && $('#usersTab')) $('#usersTab').textContent = `가입 승인 (${count})`;
+  const { count: resets } = await db
+    .from('password_reset_requests')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+  if (resets && $('#resetTab')) $('#resetTab').textContent = `비밀번호 재설정 (${resets})`;
 }
 
 // 발행된 기사 옆에 조회수·좋아요를 붙인다

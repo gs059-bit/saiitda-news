@@ -214,6 +214,78 @@ export async function signupRequests() {
   );
 }
 
+// 아이디 가입 회원의 비밀번호 재설정 요청. 임시 비밀번호는 Edge Function(supabase/functions/reset-student-password)이 만든다
+export async function passwordRequests(issued) {
+  if (!isAdmin()) return;
+  const ws = $('#workspace');
+  ws.innerHTML = '<h2>비밀번호 재설정</h2><p class="muted">불러오는 중…</p>';
+  const { data, error } = await db
+    .from('password_reset_requests')
+    .select('id,username,display_name,created_at')
+    .eq('status', 'pending')
+    .order('created_at');
+  if (error) {
+    ws.innerHTML = `<h2>비밀번호 재설정</h2>${notice(errorText(error), true)}`;
+    return;
+  }
+  // 방금 발급한 임시 비밀번호는 이 화면에서만 보인다. 학생에게 직접 알려 주면 된다
+  const result = issued
+    ? `<div class="notice ok"><strong>${esc(issued.username)}</strong> 학생의 임시 비밀번호: <strong style="font-size:1.2em;letter-spacing:.05em">${esc(issued.password)}</strong><br>이 화면을 닫으면 다시 볼 수 없어요. 학생에게 알려 주세요. 학생은 이 비밀번호로 로그인한 뒤 새 비밀번호를 정하게 됩니다.</div>`
+    : '';
+  ws.innerHTML = `<h2>비밀번호 재설정 (${data.length})</h2>
+    <p class="muted">아이디로 가입한 학생이 로그인 화면에서 요청하면 여기에 나타납니다. 임시 비밀번호를 만들어 학생에게 알려 주세요.</p>
+    ${result}
+    ${
+      data.length
+        ? data
+            .map(
+              p => `<div class="entry">
+      <div>
+        <h3>${esc(p.display_name || '이름 없음')}</h3>
+        <div class="meta">${esc(p.username)} · 요청 ${date(p.created_at)}</div>
+      </div>
+      <div class="actions">
+        <button class="btn" data-issue="${p.id}">임시 비밀번호 만들기</button>
+        <button class="btn secondary" data-dismiss="${p.id}">무시</button>
+      </div>
+    </div>`
+            )
+            .join('')
+        : '<p class="muted">기다리는 요청이 없습니다.</p>'
+    }`;
+
+  onClick(
+    '[data-issue]',
+    async b => {
+      if (!confirm('이 학생의 비밀번호를 임시 비밀번호로 바꿀까요? 지금 쓰던 비밀번호로는 로그인할 수 없게 됩니다.')) return;
+      b.disabled = true;
+      const { data: res, error: err } = await db.functions.invoke('reset-student-password', {
+        body: { request_id: b.dataset.issue }
+      });
+      if (err || res?.error) {
+        b.disabled = false;
+        alert(res?.error || '임시 비밀번호를 만들지 못했습니다. Edge Function이 배포되어 있는지 확인해 주세요.');
+        return;
+      }
+      passwordRequests(res);
+    },
+    ws
+  );
+  onClick(
+    '[data-dismiss]',
+    async b => {
+      if (!confirm('이 요청을 무시할까요? 비밀번호는 바뀌지 않습니다.')) return;
+      const { error: err } = await db
+        .from('password_reset_requests')
+        .update({ status: 'rejected', handled_at: new Date().toISOString() })
+        .eq('id', b.dataset.dismiss);
+      if (err) alert(errorText(err));
+      else passwordRequests();
+    },
+    ws
+  );
+}
+
 // 승인된(또는 막힌) 회원 목록. 학생 기자 ↔ 일반 학생, 로그인 막기·다시 허용은 DB 함수 set_member()로 한다
 export async function members() {
   if (!isAdmin()) return;

@@ -40,8 +40,9 @@
     }
 
     /* 카테고리 이미지 버튼 */
+    /* 메뉴 7개는 한 줄에 나란히, 줄이 넘어가면 남는 버튼도 가운데로 모은다 */
     #nav .image-menu-button {
-      padding: 0 !important;
+      flex: 0 0 calc((100% - 6 * 14px) / 7);
       padding: 0 !important;
       border: 0 !important;
       outline: none;
@@ -49,6 +50,12 @@
       box-shadow: none !important;
       border-radius: 14px;
       transition: transform 0.2s ease;
+    }
+
+    /* main.css가 첫·끝 버튼에 주는 auto 여백은 가운데 모으기를 방해해서 없앤다 */
+    #nav > :first-child,
+    #nav > :last-child {
+      margin-inline: 0;
     }
 
     #nav .image-menu-button:hover {
@@ -65,8 +72,8 @@
     }
 
     @media (max-width: 700px) {
-      #nav {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      #nav .image-menu-button {
+        flex-basis: calc((100% - 2 * 14px) / 3);
       }
     }
 
