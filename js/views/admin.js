@@ -366,14 +366,29 @@ export async function members() {
         }
       );
 
-      if (error || !data?.success) {
-        alert(
-          data?.error ||
-          '계정 삭제에 실패했습니다. 관리자에게 확인해 주세요.'
-        );
-        b.disabled = false;
-        return;
-      }
+     
+if (error || !data?.success) {
+  let message = data?.error;
+
+  if (!message && error?.context) {
+    try {
+      const response = error.context.clone();
+      const result = await response.json();
+      message = result?.error;
+    } catch (e) {
+      console.error('오류 응답 확인 실패:', e);
+    }
+  }
+
+  alert(
+    message ||
+    `계정 삭제 실패 (HTTP ${error?.context?.status || '알 수 없음'})`
+  );
+
+  b.disabled = false;
+  return;
+}
+
 
       alert(`${name} 학생의 로그인 계정이 삭제 처리되었습니다.`);
       members();
