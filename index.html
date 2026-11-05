@@ -294,6 +294,7 @@
   </style>
     <!-- 놀이터 디자인: 위 인라인 규칙보다 뒤에 와야 덮어쓴다 -->
     <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/category-banner.css" />
     <!-- 고운돋움 글씨체 불러오기 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -324,7 +325,12 @@
       <p class="subline">학생 기자들이 직접 취재하고 기록하는 우리 학교의 이야기</p>
     </header>
 
-    <nav class="nav"><div class="shell" id="nav"></div></nav>
+   <nav class="nav category-menu-nav" aria-label="사이잇다 카테고리">
+  <div class="shell" id="nav"></div>
+  <p class="category-scroll-hint" aria-hidden="true">
+    ← 메뉴를 좌우로 밀어 다른 카테고리를 볼 수 있어요 →
+  </p>
+</nav>
 
     <!-- js/app.js가 주소(#/...)에 맞는 화면을 여기에 그린다 -->
     <main class="shell" id="app"></main>
