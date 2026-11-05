@@ -109,7 +109,7 @@ body *:not(svg):not(svg *):not(i):not([class*="icon"]) {
 /* ===== 연한 주황색 배경 테스트 시작 ===== */
 
 html, body {
-  background-color: #fff8ec !important;
+  background-color: #fcf8ea !important;
   background-image: none !important;
 }
 

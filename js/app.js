@@ -44,82 +44,75 @@ export function render() {
 
 export function nav() {
   const { session, profile, categories, currentCat } = state;
+  const path = route();
+  const navEl = $('#nav');
 
-  // 기사 카테고리와 소개 메뉴 표시
-  
-  // 카테고리별 이미지 파일
-  const menuImages = {
-    '전체기사': 'menu-all.png',
-    '우리를 잇다': 'menu-us.png',
-    '오늘의 사이': 'menu-today.png',
-    '세상을 잇다': 'menu-world.png',
-    '책 사이를 잇다': 'menu-books.png',
-    '마음을 잇다': 'menu-heart.png'
-  };
+  // 원본 디자인에는 전체기사 + 기사 카테고리 4개 + 기자단 소개, 총 6칸이 있다.
+  // DB의 카테고리 구성이 바뀌면 기존 이미지 메뉴로 자동 복귀해
+  // 관리자가 추가/삭제한 카테고리 설정을 잃지 않도록 한다.
+  const bannerCategories = ['우리를 잇다', '세상을 잇다', '책 사이를 잇다', '마음을 잇다'];
+  const useBanner = state.loading || (
+    categories.length === bannerCategories.length &&
+    bannerCategories.every(c => categories.includes(c))
+  );
+  navEl.classList.toggle('category-banner-mode', useBanner);
+  document.querySelector('.category-menu-nav').classList.toggle('has-category-banner', useBanner);
 
-  // 모든 카테고리를 동일한 크기의 이미지 버튼으로 표시
-  $('#nav').style.cssText = `
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 16px 12px;
-    align-items: center;
-  `;
+  if (useBanner) {
+    // 하나로 연결된 그림 위에 6개의 투명한 버튼을 정확히 나눠 배치한다.
+    // 이미지 자체에는 클릭 기능이 없고 기존의 기사 분류/소개 페이지를 그대로 연결한다.
+    navEl.innerHTML = `<div class="category-banner">
+      <picture>
+        <source srcset="category-banner.webp" type="image/webp">
+        <img class="category-banner-image" src="category-banner.png"
+          width="2172" height="202" alt="" aria-hidden="true">
+      </picture>
+      <div class="category-banner-buttons">
+        ${[ALL, ...bannerCategories].map(c => `<button type="button"
+          class="category-hotspot" data-cat="${esc(c)}"
+          aria-label="${esc(c)} 기사 보기"
+          ${path === '/' && currentCat === c ? 'aria-current="page"' : ''}></button>`).join('')}
+        <button type="button" id="aboutNav" class="category-hotspot"
+          aria-label="사이를 잇는 사람들 소개 보기"
+          ${path.startsWith('/about') ? 'aria-current="page"' : ''}></button>
+      </div>
+    </div>`;
+  } else {
+    // 관리자가 카테고리를 변경했을 때는 원래의 동적 이미지 메뉴를 사용한다.
+    const menuImages = {
+      '전체기사': 'menu-all.png',
+      '우리를 잇다': 'menu-us.png',
+      '오늘의 사이': 'menu-today.png',
+      '세상을 잇다': 'menu-world.png',
+      '책 사이를 잇다': 'menu-books.png',
+      '마음을 잇다': 'menu-heart.png'
+    };
+    navEl.innerHTML = [ALL, ...categories]
+      .map(c => `<button type="button" data-cat="${esc(c)}"
+        class="image-menu-button ${path === '/' && currentCat === c ? 'selected' : ''}"
+        aria-label="${esc(c)} 기사 보기">
+        <img src="/${menuImages[c] || 'menu-all.png'}" alt="${esc(c)}"
+          style="display:block;width:100%;aspect-ratio:900/560;object-fit:contain;border-radius:12px;">
+      </button>`).join('') + `<button type="button" id="aboutNav"
+        class="image-menu-button ${path.startsWith('/about') ? 'selected' : ''}"
+        aria-label="사이를 잇는 사람들 소개 보기">
+        <img src="/menu-people.png" alt="사이를 잇는 사람들"
+          style="display:block;width:100%;aspect-ratio:900/560;object-fit:contain;border-radius:12px;">
+      </button>`;
+  }
 
-  $('#nav').innerHTML = [ALL, ...categories]
-    .map(c => `
-      <button
-        type="button"
-        data-cat="${esc(c)}"
-        class="image-menu-button ${route() === '/' && currentCat === c ? 'selected' : ''}"
-        aria-label="${esc(c)}"
-       style="padding:0;border:0;background:transparent;cursor:pointer;display:block;"
-      >
-        <img
-          src="/${menuImages[c] || 'menu-all.png'}"
-          alt="${esc(c)}"
-         style="display:block;width:100%;aspect-ratio:900/560;object-fit:contain;border-radius:12px;"
-        >
-      </button>
-    `).join('') + `
-      <button
-        type="button"
-        id="aboutNav"
-       class="image-menu-button ${route().startsWith('/about') ? 'selected' : ''}"
-        aria-label="사이를 잇는 사람들"
-        style="padding:0;border:0;background:transparent;cursor:pointer;display:block;"
-      >
-        <img
-          src="/menu-people.png"
-          alt="사이를 잇는 사람들"
-          style="display:block;width:100%;aspect-ratio:900/560;object-fit:contain;border-radius:12px;"
-        >
-      </button>
-    `;
-
-  $('#nav')
-    .querySelectorAll('[data-cat]')
-    .forEach(b => {
-      b.onclick = () => {
-        state.currentCat = b.dataset.cat;
-
-        if (route() === '/') {
-          render();
-        } else {
-          location.hash = '/';
-        }
-      };
-    });
-
-  // 소개 메뉴 클릭
-  $('#aboutNav').onclick = () => {
+  // 기존 기사 분류 상태와 해시 라우팅을 그대로 사용한다.
+  navEl.querySelectorAll('[data-cat]').forEach(b => {
+    b.onclick = () => {
+      state.currentCat = b.dataset.cat;
+      if (route() === '/') render();
+      else location.hash = '/';
+    };
+  });
+  navEl.querySelector('#aboutNav').onclick = () => {
     location.hash = '/about/intro';
     render();
   };
-
 
   const authBtn = $('#authBtn');
   authBtn.hidden = Boolean(session) && !canWrite();
