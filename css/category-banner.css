@@ -1,0 +1,134 @@
+/* 사이잇다 카테고리 메뉴: 사용자가 제공한 6칸 가로형 그림 그대로 사용.
+   기존 배경·기사·로그인·댓글·관리자 기능에는 영향을 주지 않는다. */
+
+/* 평소에는 원본 이미지 하나를 사용하고, 좁은 화면에서는 메뉴만 좌우 스크롤한다. */
+.category-menu-nav #nav.category-banner-mode {
+  display: block;
+  width: 100%;
+  max-width: 1310px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 14px 22px 17px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: normal;
+  scrollbar-width: thin;
+  scrollbar-color: #e6c99c transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-menu-nav #nav.category-banner-mode > .category-banner {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 920px;
+  aspect-ratio: 2172 / 202;
+  margin: 0;
+  padding: 0;
+  background: #fcf8ea;
+}
+
+.category-menu-nav .category-banner picture,
+.category-menu-nav .category-banner-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.category-menu-nav .category-banner-image {
+  object-fit: fill;
+}
+
+/* 그림 속 세로 구분선의 실제 위치를 기준으로 6개 독립 클릭 영역 생성 */
+.category-menu-nav .category-banner-buttons {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 339fr 346fr 342fr 388fr 333fr 424fr;
+}
+
+.category-menu-nav #nav .category-hotspot {
+  position: relative;
+  display: block;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(234, 151, 50, .15);
+}
+
+.category-menu-nav #nav .category-hotspot:hover {
+  background: rgba(243, 167, 74, .10);
+}
+
+.category-menu-nav #nav .category-hotspot:focus-visible {
+  outline: 3px solid #bc741f;
+  outline-offset: -5px;
+  z-index: 1;
+}
+
+.category-menu-nav #nav .category-hotspot[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  bottom: 8%;
+  left: 23%;
+  right: 23%;
+  height: 3px;
+  border-radius: 10px;
+  background: #d58b32;
+}
+
+/* 카테고리 관리 화면에서 메뉴 구성이 달라져도 기존 버튼들이 유지되도록 함 */
+.category-menu-nav #nav:not(.category-banner-mode) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px 12px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.category-menu-nav #nav:not(.category-banner-mode) .image-menu-button {
+  display: block;
+  cursor: pointer;
+}
+
+.category-menu-nav .category-scroll-hint {
+  display: none;
+  margin: -4px 0 9px;
+  padding: 0 15px;
+  color: #8d785e;
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 980px) {
+  .category-menu-nav.has-category-banner .category-scroll-hint {
+    display: block;
+  }
+}
+
+@media (max-width: 700px) {
+  .category-menu-nav #nav.category-banner-mode {
+    padding: 8px 14px 12px;
+  }
+  .category-menu-nav #nav.category-banner-mode > .category-banner {
+    min-width: 920px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-menu-nav #nav .category-hotspot {
+    transition: none;
+  }
+}
