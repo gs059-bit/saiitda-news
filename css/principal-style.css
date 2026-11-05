@@ -1,0 +1,78 @@
+/* 사이잇다 교장선생님 요청 반영: 프리텐다드 / 배경 / 상단 바
+   기존 카테고리 그림, 기사 기능, 회원 기능은 변경하지 않습니다.
+   이 파일은 다른 CSS 파일들보다 나중에 불러와야 합니다. */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css');
+
+:root {
+  --saiitda-font: 'Pretendard Variable', 'Pretendard', 'Malgun Gothic', sans-serif;
+  --sans: var(--saiitda-font);
+  --serif: var(--saiitda-font);
+  --body: var(--saiitda-font);
+  --play: var(--saiitda-font);
+  --paper: #F8F4EB;
+}
+
+/* 기존 base.css의 고운돋움 !important 선언도 확실하게 덮어씁니다. */
+body,
+body *:not(svg):not(svg *):not(i):not([class*="icon"]) {
+  font-family: var(--saiitda-font) !important;
+}
+
+/* 모든 페이지 배경: 기존 색보다 채도가 낮은 크림색 */
+html,
+body {
+  background-color: #F8F4EB !important;
+  background-image: none !important;
+}
+#app,
+#workspace {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* 학교 이름 / 날씨 / 로그인 버튼이 있는 최상단 바 */
+.utility {
+  background-color: #F2DFAF !important;
+  background-image: none !important;
+}
+
+/* 첫 화면 제목(전체기사)과 카테고리별 섹션 제목: 800 */
+#app .page-head h1,
+#results .cathead h2 {
+  font-family: var(--saiitda-font) !important;
+  font-weight: 800 !important;
+}
+
+/* 첫 화면 카드 제목 / 대표 기사 제목 / 기사 상세 제목: 700 */
+#results .hero h2,
+#results .story h3,
+#app .article h1 {
+  font-family: var(--saiitda-font) !important;
+  font-weight: 700 !important;
+}
+
+/* 기사 본문과 요약: 400 */
+#app .article .body,
+#app .article .lead,
+#results .hero .summary,
+#results .story .summary {
+  font-weight: 400 !important;
+}
+
+/* 기자 이름 및 작성 날짜: 400 */
+#results .hero .meta,
+#results .story .meta,
+#app .article .byline {
+  font-weight: 400 !important;
+}
+
+/* base.css의 페이지 제목 글꼴 지정도 덮어씁니다. */
+#app .page-head .catdesc,
+#app .page-head #count {
+  font-family: var(--saiitda-font) !important;
+}
+
+/* 기존 이미지 메뉴의 그림·클릭 영역은 변경하지 않습니다. */
+.category-menu-nav #nav.category-banner-mode > .category-banner {
+  background-color: #F8F4EB;
+}
