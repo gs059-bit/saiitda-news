@@ -22,7 +22,7 @@
   display: block;
   width: 100%;
   min-width: 920px;
-  aspect-ratio: 2172 / 202;
+  aspect-ratio: 1920 / 179;
   margin: 0;
   padding: 0;
   background: #fcf8ea;
@@ -39,12 +39,12 @@
   object-fit: fill;
 }
 
-/* 그림 속 세로 구분선의 실제 위치를 기준으로 6개 독립 클릭 영역 생성 */
+/* 2026-11-06 새 그림의 세로 구분선 위치: x=331,645,959,1274,1586 / 1920px */
 .category-menu-nav .category-banner-buttons {
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: 339fr 346fr 342fr 388fr 333fr 424fr;
+  grid-template-columns: 331fr 314fr 314fr 315fr 312fr 334fr;
 }
 
 .category-menu-nav #nav .category-hotspot {
