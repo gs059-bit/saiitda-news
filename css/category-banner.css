@@ -5,16 +5,17 @@
 .category-menu-nav #nav.category-banner-mode {
   display: block;
   width: 100%;
-  max-width: 1310px;
+  max-width: 1060px;
   min-height: 0;
   margin: 0 auto;
-  padding: 14px 22px 17px;
+  padding: 10px 18px 12px;
   overflow-x: auto;
   overflow-y: hidden;
   white-space: normal;
   scrollbar-width: thin;
   scrollbar-color: #e6c99c transparent;
   -webkit-overflow-scrolling: touch;
+  background-color: #F8F4EB;
 }
 
 .category-menu-nav #nav.category-banner-mode > .category-banner {
@@ -25,7 +26,7 @@
   aspect-ratio: 1920 / 179;
   margin: 0;
   padding: 0;
-  background: #fcf8ea;
+  background: #F8F4EB;
 }
 
 .category-menu-nav .category-banner picture,
@@ -37,6 +38,9 @@
 
 .category-menu-nav .category-banner-image {
   object-fit: fill;
+  /* 그림 속의 연한 크림색 배경을 사이트 배경(#F8F4EB)과 자연스럽게 통일.
+     그림 속 한글과 아이콘은 변경하지 않음. */
+  mix-blend-mode: darken;
 }
 
 /* 2026-11-06 새 그림의 세로 구분선 위치: x=331,645,959,1274,1586 / 1920px */
