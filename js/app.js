@@ -63,17 +63,17 @@ export function nav() {
     // 이미지 자체에는 클릭 기능이 없고 기존의 기사 분류/소개 페이지를 그대로 연결한다.
     navEl.innerHTML = `<div class="category-banner">
       <picture>
-        <source srcset="category-banner.webp" type="image/webp">
-        <img class="category-banner-image" src="category-banner.png"
-          width="2172" height="202" alt="" aria-hidden="true">
+        <source srcset="category-banner.webp?v=20261106" type="image/webp">
+        <img class="category-banner-image" src="category-banner.png?v=20261106"
+          width="1920" height="179" alt="" aria-hidden="true">
       </picture>
       <div class="category-banner-buttons">
         ${[ALL, ...bannerCategories].map(c => `<button type="button"
           class="category-hotspot" data-cat="${esc(c)}"
-          aria-label="${esc(c)} 기사 보기"
+          aria-label="${esc(c === '책 사이를 잇다' ? '책으로 잇다' : c)} 기사 보기"
           ${path === '/' && currentCat === c ? 'aria-current="page"' : ''}></button>`).join('')}
         <button type="button" id="aboutNav" class="category-hotspot"
-          aria-label="사이를 잇는 사람들 소개 보기"
+          aria-label="사이와 우리 기자단 소개 보기"
           ${path.startsWith('/about') ? 'aria-current="page"' : ''}></button>
       </div>
     </div>`;
