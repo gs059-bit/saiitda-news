@@ -6,6 +6,21 @@ import { $ } from '../utils.js';
 
 export function about(section = 'intro') {
   const page = section === 'reporters' ? 'reporters' : 'intro';
+
+  // 기자단 포스터 및 표시 순서 (편집부 4명, 취재부 4명)
+  const editors = [
+    { name: '조은별', image: '/reporter-1.jpg' },
+    { name: '이다연', image: '/reporter-2.jpg' },
+    { name: '고다희', image: '/reporter-3.jpg' },
+    { name: '김수빈', image: '/reporter-4.jpg' },
+  ];
+  const reportersTeam = [
+    { name: '조승아', image: '/reporter-5.jpg' },
+    { name: '조아라', image: '/reporter-6.jpg' },
+    { name: '김유빈', image: '/reporter-7.jpg' },
+    { name: '김은지', image: '/reporter-8.jpg' },
+  ];
+
  const intro = `
   <p class="about-eyebrow">ABOUT SAIITDA</p>
   <h2>사이잇다란?</h2>
@@ -16,7 +31,7 @@ export function about(section = 'intro') {
     margin:28px auto 0;
     padding:90px 15px 80px;
     background:transparent;
-    font-family:'Gowun Dodum','Malgun Gothic',sans-serif;
+    font-family:'Pretendard','Malgun Gothic',sans-serif;
     color:#40372e;
   ">
 
@@ -97,14 +112,15 @@ export function about(section = 'intro') {
     <p>기사를 다듬고 신문을 완성하는 기자들</p>
 
     <div class="reporter-grid">
-      ${[1, 2, 3].map(n => `
+      ${editors.map(({ name, image }) => `
         <a class="reporter-card"
-           href="/reporter-${n}.jpg"
+           href="${image}"
            target="_blank"
            rel="noopener noreferrer">
-          <img src="/reporter-${n}.jpg"
-               alt="편집부 어린이 기자 ${n} 소개 포스터">
-          <strong>어린이 기자 ${n}</strong>
+          <img src="${image}"
+               alt="편집부 ${name} 어린이 기자 소개 포스터"
+               loading="lazy">
+          <strong>${name}</strong>
           <span>포스터 크게 보기</span>
         </a>
       `).join('')}
@@ -114,14 +130,15 @@ export function about(section = 'intro') {
     <p>학교 곳곳의 이야기를 찾아 전하는 기자들</p>
 
     <div class="reporter-grid">
-      ${[4, 5, 6].map(n => `
+      ${reportersTeam.map(({ name, image }) => `
         <a class="reporter-card"
-           href="/reporter-${n}.jpg"
+           href="${image}"
            target="_blank"
            rel="noopener noreferrer">
-          <img src="/reporter-${n}.jpg"
-               alt="취재부 어린이 기자 ${n} 소개 포스터">
-          <strong>어린이 기자 ${n}</strong>
+          <img src="${image}"
+               alt="취재부 ${name} 어린이 기자 소개 포스터"
+               loading="lazy">
+          <strong>${name}</strong>
           <span>포스터 크게 보기</span>
         </a>
       `).join('')}
@@ -132,7 +149,7 @@ $('#app').innerHTML = `
 <style>
         .reporter-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 20px;
         margin-top: 28px;
       }
