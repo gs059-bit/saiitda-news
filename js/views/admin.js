@@ -295,10 +295,34 @@ export async function adminMfaSettings() {
   ws.innerHTML = '<h2>관리자 2단계 인증</h2><p class="muted">인증 앱의 6자리 코드를 이용합니다. 등록 후 다음 로그인부터 추가 인증을 요청합니다.</p><div id="mfaStatus"></div><button class="btn" id="startMfa">인증 앱 등록 시작</button><div id="mfaSetup"></div>';
   const factors = await db.auth.mfa.listFactors();
   if (factors.error) { $('#mfaStatus').textContent = errorText(factors.error); return; }
-  const verified = factors.data?.totp?.filter(f => f.status === 'verified') || [];
+  const allFactors = factors.data?.all || [];
+  const verified = allFactors.filter(f => f.factor_type === 'totp' && f.status === 'verified');
+  const pending = allFactors.filter(f => f.factor_type === 'totp' && f.status !== 'verified');
   if (verified.length) {
     $('#mfaStatus').textContent = '인증 앱이 등록되어 있습니다.';
     $('#startMfa').disabled = true;
+    return;
+  }
+  if (pending.length) {
+    $('#mfaStatus').textContent = '이전에 시작한 인증 앱 등록이 완료되지 않았습니다. 이전 등록을 취소한 뒤 다시 시작할 수 있습니다.';
+    $('#startMfa').disabled = true;
+    const reset = document.createElement('button');
+    reset.className = 'btn secondary';
+    reset.textContent = '미완료 등록 취소하고 다시 시작';
+    reset.onclick = async () => {
+      if (!confirm('완료되지 않은 인증 앱 등록만 취소하고 새 QR코드를 발급할까요?')) return;
+      reset.disabled = true;
+      for (const factor of pending) {
+        const result = await db.auth.mfa.unenroll({ factorId: factor.id });
+        if (result.error) {
+          $('#mfaStatus').textContent = '미완료 등록 취소 실패: ' + errorText(result.error);
+          reset.disabled = false;
+          return;
+        }
+      }
+      adminMfaSettings();
+    };
+    $('#mfaStatus').append(document.createElement('br'), reset);
     return;
   }
   $('#startMfa').onclick = async () => {
