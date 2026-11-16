@@ -3,6 +3,7 @@ import { db } from '../supabase.js';
 import { $, esc, errorText } from '../utils.js';
 import { state, isAdmin, canWrite, isMine, loadArticles } from '../state.js';
 import { notice, notFound } from '../ui.js';
+import { renderRichBody, countRichCharacters, bodyToEditorHtml, editorHtmlToBody } from '../rich-text.js';
 
 const MAX_INPUT_BYTES = 30 * 1024 * 1024;
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -149,15 +150,12 @@ function renderBody(body) {
 }
 
 function renderPreview() {
-  if ($('#bodyPreview')) {
-    $('#bodyPreview').innerHTML =
-      renderBody($('#body').value);
-  }
+  if ($('#bodyPreview')) $('#bodyPreview').innerHTML = renderRichBody($('#body').value);
 }
 
 function rememberCursor() {
   const t = $('#body');
-  if (t) bodyCursor = t.selectionStart;
+  if (t) bodyCursor = t.value.length;
 }
 
 export function editor(id) {
@@ -258,14 +256,19 @@ export function editor(id) {
         <div class="field">
           <label for="body">기사 본문 *</label>
 
-          <textarea
-            id="body"
-            required
-            style="min-height:340px"
-            placeholder="취재한 내용을 문단별로 작성해 주세요."
-          >${esc(a?.body || '')}</textarea>
+          <div class="rich-toolbar" role="toolbar" aria-label="기사 본문 꾸미기">
+            <button type="button" data-wrap="**" title="굵게"><b>굵게</b></button>
+            <button type="button" data-wrap="*" title="기울임"><i>기울임</i></button>
+            <button type="button" data-wrap="__" title="밑줄"><u>밑줄</u></button>
+            <button type="button" data-wrap="==" title="형광펜">형광펜</button>
+            <select id="richSize" aria-label="글자 크기"><option value="">글자 크기</option>${[12,14,16,18,20,24,28,32].map(n=>`<option value="${n}">${n}px</option>`).join("")}</select>
+            <select id="richColor" aria-label="글자 색"><option value="">글자 색</option><option value="#1b1b1b">검정</option><option value="#b42318">빨강</option><option value="#1457a3">파랑</option><option value="#087443">초록</option><option value="#7c3aed">보라</option><option value="#b45309">주황</option></select>
+            <button type="button" data-line="## ">소제목</button><button type="button" data-line="### ">작은 제목</button><button type="button" data-line="> ">인용문</button><button type="button" data-line="- ">글머리</button><button type="button" data-line="1. ">번호 목록</button><button type="button" id="richLink">링크</button>
+          </div>
+          <div id="richEditor" class="rich-editable" contenteditable="true" role="textbox" aria-label="기사 본문" aria-multiline="true" spellcheck="true" data-placeholder="취재한 내용을 문단별로 작성해 주세요."></div>
+          <textarea id="body" hidden aria-hidden="true"></textarea>
 
-          <div class="actions" style="margin-top:10px">
+          <div class="actions" style="margin-top:10px"><span id="charCount" class="small muted" aria-live="polite"></span><button class="btn secondary small" type="button" id="spellHelp">맞춤법 확인 방법</button><button class="btn secondary small" type="button" id="mobilePreview">모바일 미리보기</button>
             <button
               class="btn secondary"
               type="button"
@@ -392,23 +395,117 @@ export function editor(id) {
     save('pending');
   };
 
-  const t = $('#body');
 
-  t.addEventListener('click', rememberCursor);
-  t.addEventListener('keyup', rememberCursor);
-  t.addEventListener('select', rememberCursor);
-  t.addEventListener('focus', rememberCursor);
-
-  $('#editor').addEventListener('input', () => {
-    rememberCursor();
-    writeDraft();
-    renderPreview();
+  const t=$('#body'),rich=$('#richEditor');
+  rich.innerHTML=bodyToEditorHtml(a?.body||'');
+  const sync=()=>{
+    t.value=editorHtmlToBody(rich.innerHTML);
+    $('#charCount').textContent='본문 '+rich.innerText.trim().length+'자';
+    writeDraft();renderPreview();
+  };
+  // Restore existing autosave data, including older plain-text drafts.
+  offerDraft(a);
+  rich.innerHTML=bodyToEditorHtml(t.value || a?.body || '');
+  sync();
+  rich.addEventListener('input',sync);
+  $('#editor').addEventListener('input',ev=>{if(ev.target!==rich)writeDraft();});
+  $('#editor').addEventListener('change',writeDraft);
+  // Preserve the highlighted text when clicking a toolbar button.
+  let savedRange=null;
+  rich.addEventListener('mouseup',()=>{const s=getSelection();if(s.rangeCount&&rich.contains(s.anchorNode))savedRange=s.getRangeAt(0).cloneRange();});
+  rich.addEventListener('keyup',()=>{const s=getSelection();if(s.rangeCount&&rich.contains(s.anchorNode))savedRange=s.getRangeAt(0).cloneRange();});
+  const focusSelection=()=>{
+    rich.focus();
+    if(savedRange&&rich.contains(savedRange.commonAncestorContainer)){
+      const s=getSelection();s.removeAllRanges();s.addRange(savedRange);
+    }
+  };
+  const command=(cmd,value=null)=>{focusSelection();document.execCommand(cmd,false,value);sync();};
+  const wrapSelection=(tag,style={})=>{
+    focusSelection();
+    const s=getSelection();if(!s.rangeCount)return;
+    const range=s.getRangeAt(0),el=document.createElement(tag);
+    Object.assign(el.style,style);
+    if(range.collapsed){el.appendChild(document.createTextNode('\u200b'));range.insertNode(el);range.selectNodeContents(el);}
+    else{el.appendChild(range.extractContents());range.insertNode(el);range.selectNodeContents(el);}
+    s.removeAllRanges();s.addRange(range);savedRange=range.cloneRange();sync();
+  };
+  const toggleHighlight=()=>{
+    focusSelection();
+    const selection=window.getSelection();
+    if(!selection.rangeCount)return;
+    const range=selection.getRangeAt(0);
+    const selectedText=range.toString();
+    const ancestor=range.commonAncestorContainer;
+    const el=ancestor.nodeType===1?ancestor:ancestor.parentElement;
+    const parentMark=el?.closest('mark');
+    const overlappingMarks=[...rich.querySelectorAll('mark')].filter(m=>{
+      try{return range.intersectsNode(m);}catch{return false;}
+    });
+    // A second click on a selected highlighted phrase removes its mark.
+    if(parentMark&&rich.contains(parentMark)||overlappingMarks.length){
+      const marks=new Set([...overlappingMarks,...(parentMark&&rich.contains(parentMark)?[parentMark]:[])]);
+      marks.forEach(mark=>{
+        if(!mark.isConnected)return;
+        const parent=mark.parentNode;
+        while(mark.firstChild)parent.insertBefore(mark.firstChild,mark);
+        parent.removeChild(mark);
+      });
+      // Keep the caret in the editor after DOM changes.
+      savedRange=null;
+      rich.focus();
+      sync();
+      return;
+    }
+    if(range.collapsed){
+      // With no selected text, insert a highlighted typing position.
+      wrapSelection('mark');
+      return;
+    }
+    wrapSelection('mark');
+  };
+  document.querySelectorAll('[data-wrap]').forEach(b=>{
+    b.addEventListener('mousedown',ev=>ev.preventDefault());
+    b.onclick=()=>{
+      const x=b.dataset.wrap;
+      if(x==='**')command('bold');
+      else if(x==='*')command('italic');
+      else if(x==='__')command('underline');
+      else if(x==='==')toggleHighlight();
+    };
   });
-
-  $('#editor').addEventListener('change', writeDraft);
-
+  document.querySelectorAll('[data-line]').forEach(b=>{
+    b.addEventListener('mousedown',ev=>ev.preventDefault());
+    b.onclick=()=>{
+      const x=b.dataset.line;
+      if(x==='## ')command('formatBlock','h2');
+      else if(x==='### ')command('formatBlock','h3');
+      else if(x==='> ')command('formatBlock','blockquote');
+      else if(x==='- ')command('insertUnorderedList');
+      else if(x==='1. ')command('insertOrderedList');
+    };
+  });
+  $('#richSize').onchange=ev=>{
+    const size=Number(ev.target.value);
+    if(size)wrapSelection('span',{fontSize:size+'px'});
+    ev.target.value='';
+  };
+  $('#richColor').onchange=ev=>{
+    if(ev.target.value)wrapSelection('span',{color:ev.target.value});
+    ev.target.value='';
+  };
+  $('#richLink').onclick=()=>{
+    const url=prompt('링크 주소를 입력하세요 (https://로 시작)');
+    if(!url)return;
+    try{const u=new URL(url);if(u.protocol!=='https:')throw Error();command('createLink',u.href);}
+    catch{alert('https://로 시작하는 주소를 입력해 주세요.');}
+  };
+  $('#spellHelp').onclick=()=>alert('맞춤법은 브라우저에서 빨간 밑줄로 표시될 수 있습니다. 밑줄을 마우스 오른쪽 버튼으로 눌러 수정 제안을 확인하세요.');
+  $('#mobilePreview').onclick=()=>{
+    const el=$('#bodyPreview');el.classList.toggle('rich-mobile');
+    $('#mobilePreview').textContent=el.classList.contains('rich-mobile')?'PC 미리보기':'모바일 미리보기';
+  };
   $('#insertBodyPhoto').onclick = () => {
-    rememberCursor();
     $('#bodyPhotos').click();
   };
 
@@ -420,6 +517,7 @@ export function editor(id) {
 
   offerDraft(a);
   renderPreview();
+  $('#charCount').textContent = '본문 ' + countRichCharacters(t.value) + '자';
 }
 
 // 이전에 작성하던 글을 자동으로 복원한다.
@@ -569,16 +667,14 @@ async function uploadPhoto(file) {
 async function insertBodyPhotos(files) {
   if (!files.length || uploadingBodyPhotos) return;
 
-  const t = $('#body');
-
-  let position = bodyCursor == null
-    ? t.value.length
-    : Math.min(bodyCursor, t.value.length);
-
+  const rich=$('#richEditor');
+  let range=null;
+  const selection=getSelection();
+  if(selection.rangeCount&&rich.contains(selection.anchorNode))range=selection.getRangeAt(0).cloneRange();
   uploadingBodyPhotos = true;
   writeDraft();
 
-  t.readOnly = true;
+  rich.contentEditable = 'false';
   $('#insertBodyPhoto').disabled = true;
   $('#draft').disabled = true;
 
@@ -596,16 +692,14 @@ async function insertBodyPhotos(files) {
 
       try {
         const url = await uploadPhoto(files[i]);
-        const marker = `\n\n[[사진:${url}]]\n\n`;
-
-        t.setRangeText(
-          marker,
-          position,
-          position,
-          'end'
-        );
-
-        position += marker.length;
+        const figure=document.createElement('figure');figure.className='article-photo';
+        const img=document.createElement('img');img.src=url;img.alt='기사 본문 사진';
+        const caption=document.createElement('figcaption');caption.contentEditable='true';caption.textContent='사진 설명을 입력하세요';
+        figure.append(img,caption);
+        if(range&&rich.contains(range.commonAncestorContainer)){
+          range.collapse(false);range.insertNode(figure);range.setStartAfter(figure);range.collapse(true);
+        }else rich.appendChild(figure);
+        $('#body').value=editorHtmlToBody(rich.innerHTML);
         added++;
 
         writeDraft();
@@ -618,7 +712,7 @@ async function insertBodyPhotos(files) {
     }
   } finally {
     uploadingBodyPhotos = false;
-    t.readOnly = false;
+    rich.contentEditable = 'true';
 
     $('#insertBodyPhoto').disabled = false;
     $('#draft').disabled = false;
@@ -627,9 +721,7 @@ async function insertBodyPhotos(files) {
       .querySelector('button[type="submit"]')
       .disabled = false;
 
-    bodyCursor = position;
-    t.focus();
-    t.setSelectionRange(position, position);
+    rich.focus();
   }
 
   $('#photoStatus').innerHTML = `
@@ -677,11 +769,12 @@ async function save(status) {
 
   const title = $('#title').value.trim();
   const summary = $('#summary').value.trim();
-  const body = $('#body').value.trim();
+  const body = editorHtmlToBody($('#richEditor').innerHTML);
+  const hasBody = $('#richEditor').innerText.trim().length > 0 || Boolean($('#richEditor img'));
   const author = $('#author').value.trim();
   const category = $('#category').value;
 
-  if (!title || !summary || !body || !author) {
+  if (!title || !summary || !hasBody || !author) {
     writeDraft();
 
     $('#msg').innerHTML = notice(

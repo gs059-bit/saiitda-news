@@ -311,7 +311,7 @@ export async function members() {
       학생 기자와 일반 학생의 권한을 변경하거나,
       로그인을 막고 학생 계정을 삭제할 수 있습니다.
       계정을 삭제해도 작성한 기사와 댓글은 남습니다.
-      관리자·선생님 계정은 보호됩니다.
+      최고 관리자 계정은 보호되며, 선생님 관리자 계정도 변경할 수 있습니다.
     </p>
     ${
       data.length
@@ -325,7 +325,7 @@ export async function members() {
     async b => {
       if (!confirm(b.dataset.ask)) return;
 
-      const { error } = await db.rpc('set_member', {
+      const { error } = await db.rpc('manage_member_account', {
         target: b.dataset.member,
         new_role: b.dataset.role,
         new_status: b.dataset.status
@@ -344,7 +344,7 @@ export async function members() {
       const name = b.dataset.name || '이 학생';
 
       if (!confirm(
-        `${name} 학생의 계정을 삭제할까요?\n\n` +
+        `${name} 회원의 계정을 삭제할까요?\n\n` +
         '기존 아이디로 로그인할 수 없게 됩니다.\n' +
         '작성한 기사와 댓글은 남습니다.'
       )) return;
@@ -399,82 +399,30 @@ if (error || !data?.success) {
 
 function memberItem(p) {
   const blocked = p.approval_status === 'rejected';
-
-  const fixed =
-    ['admin', 'teacher_admin', 'super_admin'].includes(p.role) ||
-    p.is_super_admin === true;
-
-  const role = p.role === 'reporter' ? 'reporter' : 'reader';
+  const protectedAdmin = p.is_super_admin === true || ['admin','super_admin'].includes(p.role);
+  const role = ['reporter','reader','teacher_admin'].includes(p.role) ? p.role : 'reader';
   const status = blocked ? 'rejected' : 'approved';
-
-  const button = (
-    label,
-    newRole,
-    newStatus,
-    ask,
-    kind = 'secondary'
-  ) =>
-    `<button class="btn ${kind}"
-      data-member="${p.id}"
-      data-role="${newRole}"
-      data-status="${newStatus}"
-      data-ask="${esc(ask)}">${label}</button>`;
-
+  const button = (label,newRole,newStatus,ask,kind='secondary') =>
+    `<button class="btn ${kind}" data-member="${p.id}" data-role="${newRole}"
+      data-status="${newStatus}" data-ask="${esc(ask)}">${label}</button>`;
   let actions;
-
-  if (fixed) {
-    actions = '<span class="small muted">Supabase에서 지정</span>';
+  if(protectedAdmin) {
+    actions='<span class="small muted">최고 관리자 보호 · 변경 불가</span>';
   } else {
-    actions =
-      (role === 'reporter'
-        ? button(
-            '일반 학생으로',
-            'reader',
-            status,
-            '이 회원을 일반 학생으로 바꿀까요?'
-          )
-        : button(
-            '학생 기자로',
-            'reporter',
-            status,
-            '이 회원을 학생 기자로 바꿀까요?'
-          )
-      ) +
-      (blocked
-        ? button(
-            '다시 허용',
-            role,
-            'approved',
-            '이 회원이 다시 로그인할 수 있게 할까요?'
-          )
-        : button(
-            '로그인 막기',
-            role,
-            'rejected',
-            '이 회원의 로그인을 막을까요?',
-            'danger'
-          )
-      ) +
-      `<button
-        class="btn secondary"
-        style="border-color:#b42318;color:#b42318"
-        data-delete-student="${p.id}"
-        data-name="${esc(p.display_name || '이름 없음')}">
-        계정 삭제
-      </button>`;
+    actions = '<div class="actions" style="flex-wrap:wrap">' +
+      (role !== 'reader' ? button('일반 학생으로','reader',status,'이 회원을 일반 학생으로 변경할까요? 기존 관리자 권한도 사라집니다.') : '') +
+      (role !== 'reporter' ? button('학생 기자로','reporter',status,'이 회원을 학생 기자로 변경할까요? 기존 관리자 권한도 사라집니다.') : '') +
+      (role !== 'teacher_admin' ? button('선생님 관리자로','teacher_admin',status,'이 회원에게 선생님 관리자 권한을 부여할까요?') : '') +
+      (blocked ? button('다시 허용',role,'approved','이 회원의 로그인을 다시 허용할까요?')
+        : button('로그인 막기',role,'rejected','이 회원의 로그인을 제한할까요?','danger')) +
+      `<button class="btn secondary" style="border-color:#b42318;color:#b42318"
+        data-delete-student="${p.id}" data-name="${esc(p.display_name || '이름 없음')}">계정 삭제</button>` +
+      '</div>';
   }
-
-  return `<div class="entry">
-    <div>
-      <span class="status">
-        ${blocked ? '로그인 막힘' : roleLabel[viewRole(p.role)]}
-      </span>
-      <h3>${esc(p.display_name || '이름 없음')}</h3>
-      <div class="meta">
-        ${p.username ? esc(p.username) + ' · ' : ''}
-        가입 ${date(p.created_at)}
-      </div>
-    </div>
-    <div class="actions">${actions}</div>
-  </div>`;
+  return `<div class="entry"><div>
+    <span class="status">${blocked ? '로그인 막힘' : (roleLabel[viewRole(p.role)] || (role==='teacher_admin'?'선생님 관리자':'일반 학생'))}</span>
+    <h3>${esc(p.display_name || '이름 없음')}</h3>
+    <div class="meta">${p.username ? esc(p.username)+' · ' : ''}가입 ${date(p.created_at)}</div>
+  </div><div class="actions">${actions}</div></div>`;
 }
+

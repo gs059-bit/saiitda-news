@@ -857,3 +857,29 @@ body[data-layout='list'] .story.feature h3 {
     font-size: 16px;
   }
 }
+
+/* 기자단 본문 서식 도구와 안전한 기사 렌더링 */
+.rich-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:10px;background:#f3f6f9;border:1px solid #cbd5e1;border-radius:6px 6px 0 0}
+.rich-toolbar button,.rich-toolbar select{width:auto;min-height:36px;padding:6px 9px;background:white;border:1px solid #b7c3d0;border-radius:4px;font-size:13px}
+.rich-toolbar button:hover{border-color:#1457a3}
+.article .body h2,.article .body h3{line-height:1.4;margin:22px 0 6px}
+.article .body blockquote{margin:14px 0;padding:10px 16px;border-left:4px solid #94a3b8;background:#f8fafc}
+.article .body mark{background:#fff0a3}
+.article .body .rich-list{margin:0 0 0 14px}
+.article-photo{margin:24px 0;text-align:center;white-space:normal}
+.article-photo img{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:8px}
+.article-photo figcaption{color:#64748b;font-size:13px;margin-top:8px}
+#bodyPreview{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9}
+#bodyPreview.rich-mobile{max-width:390px;margin:12px auto;border:8px solid #e2e8f0;border-radius:22px;padding:18px!important}
+#bodyPreview h2,#bodyPreview h3{margin:18px 0 4px}
+#bodyPreview blockquote{border-left:4px solid #94a3b8;padding:8px 14px;background:#f8fafc}
+#bodyPreview mark{background:#fff0a3}
+
+.rich-editable{min-height:340px;padding:16px;border:1px solid #bdc5cb;border-top:0;border-radius:0 0 6px 6px;background:#fff;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;outline-offset:2px}
+.rich-editable:empty:before{content:attr(data-placeholder);color:#94a3b8}
+.rich-editable h2,.rich-editable h3{margin:12px 0}
+.rich-editable blockquote{border-left:4px solid #94a3b8;padding:8px 14px;background:#f8fafc}
+.rich-editable figure{margin:16px auto;text-align:center}
+.rich-editable figure img{max-width:100%;max-height:600px}
+.rich-editable figcaption{font-size:13px;color:#64748b;min-height:24px}
+.rich-editable mark{background:#fff0a3}
