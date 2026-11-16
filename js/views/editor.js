@@ -432,33 +432,34 @@ export function editor(id) {
   };
   const toggleHighlight=()=>{
     focusSelection();
-    const selection=getSelection();
+    const selection=window.getSelection();
     if(!selection.rangeCount)return;
     const range=selection.getRangeAt(0);
-    const node=range.commonAncestorContainer;
-    const element=node.nodeType===1?node:node.parentElement;
-    const existing=element?.closest('mark');
-    if(existing&&rich.contains(existing)){
-      // Remove the highlight without removing the selected text or its other styles.
-      const parent=existing.parentNode;
-      while(existing.firstChild)parent.insertBefore(existing.firstChild,existing);
-      parent.removeChild(existing);
-      parent.normalize();
-      savedRange=null;
-      sync();
-      rich.focus();
-      return;
-    }
-    const marks=[...rich.querySelectorAll('mark')].filter(mark=>range.intersectsNode(mark));
-    if(marks.length){
+    const selectedText=range.toString();
+    const ancestor=range.commonAncestorContainer;
+    const el=ancestor.nodeType===1?ancestor:ancestor.parentElement;
+    const parentMark=el?.closest('mark');
+    const overlappingMarks=[...rich.querySelectorAll('mark')].filter(m=>{
+      try{return range.intersectsNode(m);}catch{return false;}
+    });
+    // A second click on a selected highlighted phrase removes its mark.
+    if(parentMark&&rich.contains(parentMark)||overlappingMarks.length){
+      const marks=new Set([...overlappingMarks,...(parentMark&&rich.contains(parentMark)?[parentMark]:[])]);
       marks.forEach(mark=>{
+        if(!mark.isConnected)return;
         const parent=mark.parentNode;
         while(mark.firstChild)parent.insertBefore(mark.firstChild,mark);
         parent.removeChild(mark);
       });
+      // Keep the caret in the editor after DOM changes.
       savedRange=null;
-      sync();
       rich.focus();
+      sync();
+      return;
+    }
+    if(range.collapsed){
+      // With no selected text, insert a highlighted typing position.
+      wrapSelection('mark');
       return;
     }
     wrapSelection('mark');
