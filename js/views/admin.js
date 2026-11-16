@@ -310,7 +310,18 @@ export async function adminMfaSettings() {
     const img = document.createElement('img');
     img.alt = '관리자 인증 앱 등록 QR코드';
     img.style.maxWidth = '220px';
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data.totp.qr_code);
+    // Supabase returns the QR image as a data URI; do not encode it twice.
+    const qr = data.totp?.qr_code || '';
+    img.src = qr.startsWith('data:image/') ? qr : 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(qr);
+    img.onerror = () => { $('#mfaQr').textContent = 'QR코드를 표시할 수 없습니다. 아래 수동 등록 키를 사용하세요.'; };
+    if (data.totp?.secret) {
+      const manual = document.createElement('p');
+      manual.textContent = 'QR코드가 보이지 않으면 Google Authenticator에서 설정 키 입력을 선택하세요. 설정 키: ';
+      const secret = document.createElement('code');
+      secret.textContent = data.totp.secret;
+      manual.append(secret);
+      setup.append(manual);
+    }
     $('#mfaQr').append(img);
     $('#confirmMfa').onclick = async () => {
       const code = $('#mfaCode').value.trim();
