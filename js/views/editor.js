@@ -742,19 +742,16 @@ async function insertBodyPhotos(files) {
 
 // 사용하지 않는 대표 사진 삭제
 export async function removePhoto(url) {
-  const i = url
-    ? url.indexOf(PHOTO_DIR)
-    : -1;
-
-  if (i < 0) return;
-
-  await db.storage
-    .from('article-images')
-    .remove([
-      decodeURIComponent(
-        url.slice(i + PHOTO_DIR.length)
-      )
-    ]);
+  if (!url) return;
+  const expected = new URL(db.storage.from('article-images').getPublicUrl('__check__.jpg').data.publicUrl);
+  let source;
+  try { source = new URL(url); } catch { return; }
+  const prefix = expected.pathname.slice(0, -'__check__.jpg'.length);
+  if (source.origin !== expected.origin || !source.pathname.startsWith(prefix)) return;
+  const path = decodeURIComponent(source.pathname.slice(prefix.length));
+  if (!path || path.includes('..')) return;
+  const { error } = await db.storage.from('article-images').remove([path]);
+  if (error) throw error;
 }
 
 // 기사 저장
