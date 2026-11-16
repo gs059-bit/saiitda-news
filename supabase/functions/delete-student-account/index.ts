@@ -68,6 +68,12 @@ Deno.serve(async (req) => {
       }, req);
     }
 
+    // Require a completed second factor for privileged account deletion.
+    const jwtPayload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (jwtPayload.aal !== "aal2") {
+      return reply(403, { error: "관리자 2단계 인증 후 다시 시도해 주세요." }, req);
+    }
+
     const currentUser = authData.user;
 
     // 2. 최고 관리자 권한 확인
