@@ -430,6 +430,39 @@ export function editor(id) {
     else{el.appendChild(range.extractContents());range.insertNode(el);range.selectNodeContents(el);}
     s.removeAllRanges();s.addRange(range);savedRange=range.cloneRange();sync();
   };
+  const toggleHighlight=()=>{
+    focusSelection();
+    const selection=getSelection();
+    if(!selection.rangeCount)return;
+    const range=selection.getRangeAt(0);
+    const node=range.commonAncestorContainer;
+    const element=node.nodeType===1?node:node.parentElement;
+    const existing=element?.closest('mark');
+    if(existing&&rich.contains(existing)){
+      // Remove the highlight without removing the selected text or its other styles.
+      const parent=existing.parentNode;
+      while(existing.firstChild)parent.insertBefore(existing.firstChild,existing);
+      parent.removeChild(existing);
+      parent.normalize();
+      savedRange=null;
+      sync();
+      rich.focus();
+      return;
+    }
+    const marks=[...rich.querySelectorAll('mark')].filter(mark=>range.intersectsNode(mark));
+    if(marks.length){
+      marks.forEach(mark=>{
+        const parent=mark.parentNode;
+        while(mark.firstChild)parent.insertBefore(mark.firstChild,mark);
+        parent.removeChild(mark);
+      });
+      savedRange=null;
+      sync();
+      rich.focus();
+      return;
+    }
+    wrapSelection('mark');
+  };
   document.querySelectorAll('[data-wrap]').forEach(b=>{
     b.addEventListener('mousedown',ev=>ev.preventDefault());
     b.onclick=()=>{
@@ -437,7 +470,7 @@ export function editor(id) {
       if(x==='**')command('bold');
       else if(x==='*')command('italic');
       else if(x==='__')command('underline');
-      else if(x==='==')wrapSelection('mark');
+      else if(x==='==')toggleHighlight();
     };
   });
   document.querySelectorAll('[data-line]').forEach(b=>{
