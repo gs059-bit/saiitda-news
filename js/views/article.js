@@ -268,6 +268,7 @@ async function loadComments(id) {
 
 function commentItem(c) {
   const role = c.author_role;
+  const mine = Boolean(state.session?.user?.id && c.author_id === state.session.user.id);
 
   return `
     <div class="comment">
@@ -291,13 +292,11 @@ function commentItem(c) {
           </span>
         ` : ''}
 
-        ${canModerate() ? `
-          <button
-            class="btn danger small"
-            data-cdelete="${c.id}"
-          >
-            삭제
-          </button>
+        ${mine ? `
+          <button class="btn secondary small" data-cedit="${c.id}">수정</button>
+        ` : ''}
+        ${mine || canModerate() ? `
+          <button class="btn danger small" data-cdelete="${c.id}">삭제</button>
         ` : ''}
       </div>
 
@@ -391,6 +390,64 @@ function renderComments(id, list) {
     );
 
     t.focus();
+  });
+
+  onClick('[data-cedit]', async b => {
+    const c = list.find(item => item.id === b.dataset.cedit);
+    if (!c || c.author_id !== state.session?.user?.id) return;
+    const item = b.closest('.comment');
+    const body = item?.querySelector('.cbody');
+    if (!body) return;
+    const original = c.content || '';
+    const editor = document.createElement('textarea');
+    editor.maxLength = 300;
+    editor.required = true;
+    editor.value = original;
+    editor.setAttribute('aria-label', '댓글 내용 수정');
+    editor.style.width = '100%';
+    editor.style.minHeight = '100px';
+    const controls = document.createElement('div');
+    controls.className = 'actions';
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'btn small';
+    save.textContent = '수정 저장';
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'btn secondary small';
+    cancel.textContent = '취소';
+    controls.append(save, cancel);
+    body.replaceWith(editor);
+    editor.after(controls);
+    b.disabled = true;
+    cancel.onclick = () => loadComments(id);
+    save.onclick = async () => {
+      const content = editor.value.trim();
+      if (!content || content.length > 300) {
+        alert('댓글은 1~300자로 입력해 주세요.');
+        return;
+      }
+      if (content === original) {
+        loadComments(id);
+        return;
+      }
+      save.disabled = true;
+      const { data, error } = await db.from('comments')
+        .update({ content })
+        .eq('id', c.id)
+        .eq('author_id', state.session.user.id)
+        .select('id');
+      if (error) {
+        alert(errorText(error));
+        save.disabled = false;
+      } else if (!data?.length) {
+        alert('댓글을 수정할 권한이 없습니다.');
+        save.disabled = false;
+      } else {
+        loadComments(id);
+      }
+    };
+    editor.focus();
   });
 
   onClick('[data-cdelete]', async b => {
