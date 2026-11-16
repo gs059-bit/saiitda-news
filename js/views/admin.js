@@ -299,9 +299,25 @@ export async function adminMfaSettings() {
   const verified = allFactors.filter(f => f.factor_type === 'totp' && f.status === 'verified');
   const pending = allFactors.filter(f => f.factor_type === 'totp' && f.status !== 'verified');
   if (verified.length) {
-    $('#mfaStatus').textContent = '인증 앱이 등록되어 있습니다.';
-    $('#startMfa').disabled = true;
-    return;
+    $('#mfaStatus').textContent = '인증 앱 ' + verified.length + '개가 등록되어 있습니다. 스마트폰 분실에 대비해 다른 기기에 예비 인증 앱을 추가할 수 있습니다. 기존 인증 앱은 삭제되지 않습니다.';
+    $('#startMfa').textContent = '예비 인증 앱 추가';
+    if (pending.length) {
+      $('#startMfa').disabled = true;
+      const reset = document.createElement('button');
+      reset.className = 'btn secondary';
+      reset.textContent = '미완료 예비 인증 앱 등록 취소';
+      reset.onclick = async () => {
+        if (!confirm('미완료 예비 인증 앱 등록만 취소할까요? 기존 인증 앱은 유지됩니다.')) return;
+        reset.disabled = true;
+        for (const factor of pending) {
+          const result = await db.auth.mfa.unenroll({ factorId: factor.id });
+          if (result.error) { $('#mfaStatus').textContent = errorText(result.error); reset.disabled = false; return; }
+        }
+        adminMfaSettings();
+      };
+      $('#mfaStatus').append(document.createElement('br'), reset);
+      return;
+    }
   }
   if (pending.length) {
     $('#mfaStatus').textContent = '이전에 시작한 인증 앱 등록이 완료되지 않았습니다. 이전 등록을 취소한 뒤 다시 시작할 수 있습니다.';
@@ -327,7 +343,7 @@ export async function adminMfaSettings() {
   }
   $('#startMfa').onclick = async () => {
     $('#startMfa').disabled = true;
-    const { data, error } = await db.auth.mfa.enroll({ factorType: 'totp', friendlyName: '사이잇다 관리자' });
+    const { data, error } = await db.auth.mfa.enroll({ factorType: 'totp', friendlyName: verified.length ? '사이잇다 예비 인증 ' + (verified.length + 1) : '사이잇다 관리자' });
     if (error) { $('#mfaStatus').textContent = errorText(error); $('#startMfa').disabled = false; return; }
     const setup = $('#mfaSetup');
     setup.innerHTML = '<p>인증 앱으로 QR코드를 스캔한 뒤 6자리 코드를 입력하세요. QR코드는 다른 사람에게 보여주지 마세요.</p><div id="mfaQr"></div><input id="mfaCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6자리 인증 코드"><button class="btn" id="confirmMfa">인증 앱 등록 완료</button>';
