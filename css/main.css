@@ -874,3 +874,12 @@ body[data-layout='list'] .story.feature h3 {
 #bodyPreview h2,#bodyPreview h3{margin:18px 0 4px}
 #bodyPreview blockquote{border-left:4px solid #94a3b8;padding:8px 14px;background:#f8fafc}
 #bodyPreview mark{background:#fff0a3}
+
+.rich-editable{min-height:340px;padding:16px;border:1px solid #bdc5cb;border-top:0;border-radius:0 0 6px 6px;background:#fff;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;outline-offset:2px}
+.rich-editable:empty:before{content:attr(data-placeholder);color:#94a3b8}
+.rich-editable h2,.rich-editable h3{margin:12px 0}
+.rich-editable blockquote{border-left:4px solid #94a3b8;padding:8px 14px;background:#f8fafc}
+.rich-editable figure{margin:16px auto;text-align:center}
+.rich-editable figure img{max-width:100%;max-height:600px}
+.rich-editable figcaption{font-size:13px;color:#64748b;min-height:24px}
+.rich-editable mark{background:#fff0a3}
