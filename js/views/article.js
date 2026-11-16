@@ -5,6 +5,7 @@ import { roleLabel } from '../roles.js';
 import { state, isAdmin, canWrite, canModerate, isMine } from '../state.js';
 import { notice, byline, notFound } from '../ui.js';
 import { recordView } from '../stats.js';
+import { renderRichBody } from '../rich-text.js';
 
 const roleEmoji = {
   admin: '👑',
@@ -130,7 +131,7 @@ export function articleView(id) {
           white-space:pre-wrap;
           overflow-wrap:anywhere;
         "
-      >${renderArticleBody(a.body)}</div>
+      >${renderRichBody(a.body)}</div>
 
       <div
         class="actions"
