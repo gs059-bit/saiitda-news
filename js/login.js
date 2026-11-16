@@ -55,8 +55,19 @@ async function requireMfaIfEnrolled(role) {
   if (role !== 'admin') return false;
   const factors = await db.auth.mfa.listFactors();
   if (factors.error) throw factors.error;
-  const factor = factors.data?.totp?.find(f => f.status === 'verified');
-  if (!factor) return false;
+  const available = (factors.data?.totp || []).filter(f => f.status === 'verified');
+  if (!available.length) return false;
+  let factor = available[0];
+  if (available.length > 1) {
+    const choices = available.map((f, i) => (i + 1) + '. ' + (f.friendly_name || '인증 앱')).join('\n');
+    const choice = prompt('인증할 앱을 선택하세요. 번호를 입력하세요.\n' + choices, '1');
+    const index = Number(choice) - 1;
+    if (!choice || !Number.isInteger(index) || index < 0 || index >= available.length) {
+      await db.auth.signOut();
+      throw new Error('2단계 인증이 취소되었습니다.');
+    }
+    factor = available[index];
+  }
   const level = await db.auth.mfa.getAuthenticatorAssuranceLevel();
   if (level.error) throw level.error;
   if (level.data.currentLevel === 'aal2') return false;
