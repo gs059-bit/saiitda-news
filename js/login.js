@@ -51,6 +51,30 @@ function toggleTeacherNote() {
   $('#signupFields').disabled = false;
 }
 
+async function requireMfaIfEnrolled(role) {
+  if (role !== 'admin') return false;
+  const factors = await db.auth.mfa.listFactors();
+  if (factors.error) throw factors.error;
+  const factor = factors.data?.totp?.find(f => f.status === 'verified');
+  if (!factor) return false;
+  const level = await db.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (level.error) throw level.error;
+  if (level.data.currentLevel === 'aal2') return false;
+  const challenge = await db.auth.mfa.challenge({ factorId: factor.id });
+  if (challenge.error) throw challenge.error;
+  const code = prompt('관리자 인증 앱의 6자리 코드를 입력하세요.');
+  if (!code || !/^\d{6}$/.test(code.trim())) {
+    await db.auth.signOut();
+    throw new Error('2단계 인증이 취소되었습니다. 다시 로그인해 주세요.');
+  }
+  const result = await db.auth.mfa.verify({ factorId: factor.id, challengeId: challenge.data.id, code: code.trim() });
+  if (result.error) {
+    await db.auth.signOut();
+    throw new Error('2단계 인증에 실패했습니다. 다시 로그인해 주세요.');
+  }
+  return true;
+}
+
 async function login(e) {
   e.preventDefault();
   $('#msg').replaceChildren();
@@ -109,6 +133,8 @@ async function login(e) {
     showMessage('#rmsg', '임시 비밀번호로 로그인했습니다. 사용할 새 비밀번호를 정해 주세요.', true);
     return;
   }
+  try { await requireMfaIfEnrolled(role); }
+  catch (e) { fail(e.message || '2단계 인증 오류'); return; }
   go(role);
 }
 
@@ -222,8 +248,10 @@ async function init() {
   const { data } = await db.auth.getSession();
   if (!data.session) return;
   const acc = await account(data.session.user.id);
-  if (acc.status === 'approved') go(acc.role);
-  else await db.auth.signOut();
+  if (acc.status === 'approved') {
+    try { await requireMfaIfEnrolled(acc.role); go(acc.role); }
+    catch (e) { showMessage('#msg', e.message || '2단계 인증 오류'); }
+  } else await db.auth.signOut();
 }
 
 init();
