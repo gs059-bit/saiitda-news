@@ -313,11 +313,41 @@ export async function members() {
       계정을 삭제해도 작성한 기사와 댓글은 남습니다.
       최고 관리자 계정은 보호되며, 선생님 관리자 계정도 변경할 수 있습니다.
     </p>
+    <section class="notice"><strong>졸업·전출 회원 일괄 정리</strong>
+      <p class="muted">대상 학생을 직접 선택하세요. 최고 관리자와 선생님 관리자 계정은 제외됩니다. 자동 삭제는 하지 않습니다.</p>
+      <div class="actions"><button class="btn secondary" id="selectStudents">학생 전체 선택</button>
+      <button class="btn danger" id="deleteSelectedStudents">선택한 학생 계정 정리</button></div>
+      <p id="batchStatus" class="muted"></p></section>
     ${
       data.length
         ? data.map(memberItem).join('')
         : '<p class="muted">회원이 없습니다.</p>'
     }`;
+
+  $('#selectStudents').onclick = () => {
+    const boxes = [...ws.querySelectorAll('[data-batch-student]')];
+    const all = boxes.length && boxes.every(x => x.checked);
+    boxes.forEach(x => { x.checked = !all; });
+  };
+  $('#deleteSelectedStudents').onclick = async () => {
+    const selected = [...ws.querySelectorAll('[data-batch-student]:checked')];
+    if (!selected.length) { alert('정리할 학생을 선택해 주세요.'); return; }
+    if (!confirm('선택한 학생 ' + selected.length + '명의 계정을 정리하고 작성자 이름을 익명화할까요? 되돌릴 수 없습니다.')) return;
+    if (prompt('실행하려면 학생 수 ' + selected.length + '를 숫자로 입력해 주세요.') !== String(selected.length)) return;
+    const button = $('#deleteSelectedStudents'); button.disabled = true;
+    let completed = 0;
+    for (const box of selected) {
+      $('#batchStatus').textContent = '처리 중 ' + (completed + 1) + '/' + selected.length;
+      const { data: result, error } = await db.functions.invoke('delete-student-account', { body: { target_id: box.value } });
+      if (error || !result?.success) {
+        $('#batchStatus').textContent = '중단됨: ' + completed + '명 완료. ' + (result?.error || errorText(error) || '오류');
+        button.disabled = false; return;
+      }
+      completed++;
+    }
+    alert(completed + '명의 계정을 정리했습니다. 기사와 댓글은 익명으로 남습니다.');
+    members();
+  };
 
   // 기존 회원 권한 변경 기능
   onClick(
@@ -420,6 +450,7 @@ function memberItem(p) {
       '</div>';
   }
   return `<div class="entry"><div>
+    ${!protectedAdmin && ['reader','reporter'].includes(p.role) ? '<label class="small"><input type="checkbox" data-batch-student value="' + esc(p.id) + '"> 졸업·전출 정리 대상</label>' : ''}
     <span class="status">${blocked ? '로그인 막힘' : (roleLabel[viewRole(p.role)] || (role==='teacher_admin'?'선생님 관리자':'일반 학생'))}</span>
     <h3>${esc(p.display_name || '이름 없음')}</h3>
     <div class="meta">${p.username ? esc(p.username)+' · ' : ''}가입 ${date(p.created_at)}</div>
