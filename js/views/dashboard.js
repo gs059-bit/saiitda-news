@@ -130,6 +130,16 @@ function entry(a) {
   </div>`;
 }
 
+// Only remove images referenced by the deleted article and no remaining article.
+function articlePhotoUrls(article) {
+  const urls = new Set();
+  if (article?.cover_url) urls.add(article.cover_url);
+  const body = String(article?.body || '');
+  for (const match of body.matchAll(/\[\[사진:(https:\/\/[^\]\s|]+)(?:\|[^\]]*)?\]\]/g)) urls.add(match[1]);
+  for (const match of body.matchAll(/<img\b[^>]*\bsrc=["'](https:\/\/[^"']+)["']/gi)) urls.add(match[1].replaceAll('&amp;', '&'));
+  return [...urls];
+}
+
 async function changeArticle(id, action) {
   const { confirm: question, ask, fields } = ARTICLE_ACTIONS[action];
   let note = null;
@@ -145,7 +155,23 @@ async function changeArticle(id, action) {
     alert(errorText(error));
     return;
   }
-  if (action === 'delete') await removePhoto(article?.cover_url);
+  if (action === 'delete') {
+    // Never remove a shared file referenced by another article.
+    const { data: remaining, error: listError } = await db.from('articles')
+      .select('id,cover_url,body');
+    if (listError) {
+      alert('기사는 삭제되었지만 사진 정리 여부를 확인하지 못했습니다. 관리자에게 문의하세요.');
+    } else {
+      const inUse = new Set((remaining || []).flatMap(articlePhotoUrls));
+      const failures = [];
+      for (const url of articlePhotoUrls(article)) {
+        if (inUse.has(url)) continue;
+        try { await removePhoto(url); }
+        catch (e) { failures.push(errorText(e)); }
+      }
+      if (failures.length) alert('기사는 삭제되었지만 일부 사진 원본 정리에 실패했습니다: ' + failures.join(' / '));
+    }
+  }
   await loadArticles();
   dashboard();
 }
