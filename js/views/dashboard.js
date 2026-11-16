@@ -3,7 +3,7 @@ import { db } from '../supabase.js';
 import { $, esc, date, errorText, onClick } from '../utils.js';
 import { state, isAdmin, canWrite, isMine, loadArticles } from '../state.js';
 import { notice } from '../ui.js';
-import { categoryEditor, designEditor, signupRequests, members, passwordRequests } from './admin.js';
+import { categoryEditor, designEditor, signupRequests, members, passwordRequests, adminMfaSettings } from './admin.js';
 import { removePhoto } from './editor.js';
 import { articleStats } from '../stats.js';
 
@@ -56,7 +56,7 @@ export function dashboard() {
         <button id="designTab">사이트 디자인 설정</button>
         <button id="usersTab">가입 승인</button>
         <button id="membersTab">회원 관리</button>
-        <button id="resetTab">비밀번호 재설정</button>`
+        <button id="resetTab">비밀번호 재설정</button><button id="mfaTab">관리자 2단계 인증</button>`
             : ''
         }
         <p class="small muted">기사 발행 전 관리자 승인이 필요합니다.</p>
@@ -77,6 +77,7 @@ export function dashboard() {
     $('#usersTab').onclick = signupRequests;
     $('#membersTab').onclick = members;
     $('#resetTab').onclick = () => passwordRequests();
+    $('#mfaTab').onclick = adminMfaSettings;
     showSignupCount();
   }
   showStats();
