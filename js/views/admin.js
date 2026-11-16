@@ -288,6 +288,42 @@ export async function passwordRequests(issued) {
 
 // 승인된(또는 막힌) 회원 목록. 학생 기자 ↔ 일반 학생, 로그인 막기·다시 허용은 DB 함수 set_member()로 한다
 
+// Supabase Auth TOTP: 최고 관리자 본인이 인증 앱을 등록합니다.
+export async function adminMfaSettings() {
+  if (!isAdmin()) return;
+  const ws = $('#workspace');
+  ws.innerHTML = '<h2>관리자 2단계 인증</h2><p class="muted">인증 앱의 6자리 코드를 이용합니다. 등록 후 다음 로그인부터 추가 인증을 요청합니다.</p><div id="mfaStatus"></div><button class="btn" id="startMfa">인증 앱 등록 시작</button><div id="mfaSetup"></div>';
+  const factors = await db.auth.mfa.listFactors();
+  if (factors.error) { $('#mfaStatus').textContent = errorText(factors.error); return; }
+  const verified = factors.data?.totp?.filter(f => f.status === 'verified') || [];
+  if (verified.length) {
+    $('#mfaStatus').textContent = '인증 앱이 등록되어 있습니다.';
+    $('#startMfa').disabled = true;
+    return;
+  }
+  $('#startMfa').onclick = async () => {
+    $('#startMfa').disabled = true;
+    const { data, error } = await db.auth.mfa.enroll({ factorType: 'totp', friendlyName: '사이잇다 관리자' });
+    if (error) { $('#mfaStatus').textContent = errorText(error); $('#startMfa').disabled = false; return; }
+    const setup = $('#mfaSetup');
+    setup.innerHTML = '<p>인증 앱으로 QR코드를 스캔한 뒤 6자리 코드를 입력하세요. QR코드는 다른 사람에게 보여주지 마세요.</p><div id="mfaQr"></div><input id="mfaCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6자리 인증 코드"><button class="btn" id="confirmMfa">인증 앱 등록 완료</button>';
+    const img = document.createElement('img');
+    img.alt = '관리자 인증 앱 등록 QR코드';
+    img.style.maxWidth = '220px';
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data.totp.qr_code);
+    $('#mfaQr').append(img);
+    $('#confirmMfa').onclick = async () => {
+      const code = $('#mfaCode').value.trim();
+      if (!/^\d{6}$/.test(code)) { alert('6자리 코드를 입력하세요.'); return; }
+      const challenge = await db.auth.mfa.challenge({ factorId: data.id });
+      if (challenge.error) { alert(errorText(challenge.error)); return; }
+      const verified = await db.auth.mfa.verify({ factorId: data.id, challengeId: challenge.data.id, code });
+      if (verified.error) { alert(errorText(verified.error)); return; }
+      adminMfaSettings();
+    };
+  };
+}
+
 export async function members() {
   if (!isAdmin()) return;
 
