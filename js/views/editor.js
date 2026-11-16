@@ -3,6 +3,7 @@ import { db } from '../supabase.js';
 import { $, esc, errorText } from '../utils.js';
 import { state, isAdmin, canWrite, isMine, loadArticles } from '../state.js';
 import { notice, notFound } from '../ui.js';
+import { renderRichBody, countRichCharacters } from '../rich-text.js';
 
 const MAX_INPUT_BYTES = 30 * 1024 * 1024;
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -151,7 +152,7 @@ function renderBody(body) {
 function renderPreview() {
   if ($('#bodyPreview')) {
     $('#bodyPreview').innerHTML =
-      renderBody($('#body').value);
+      renderRichBody($('#body').value);
   }
 }
 
@@ -258,14 +259,24 @@ export function editor(id) {
         <div class="field">
           <label for="body">기사 본문 *</label>
 
+          <div class="rich-toolbar" role="toolbar" aria-label="기사 본문 꾸미기">
+            <button type="button" data-wrap="**" title="굵게"><b>굵게</b></button>
+            <button type="button" data-wrap="*" title="기울임"><i>기울임</i></button>
+            <button type="button" data-wrap="__" title="밑줄"><u>밑줄</u></button>
+            <button type="button" data-wrap="==" title="형광펜">형광펜</button>
+            <select id="richSize" aria-label="글자 크기"><option value="">글자 크기</option>${[12,14,16,18,20,24,28,32].map(n=>`<option value="${n}">${n}px</option>`).join("")}</select>
+            <select id="richColor" aria-label="글자 색"><option value="">글자 색</option><option value="#1b1b1b">검정</option><option value="#b42318">빨강</option><option value="#1457a3">파랑</option><option value="#087443">초록</option><option value="#7c3aed">보라</option><option value="#b45309">주황</option></select>
+            <button type="button" data-line="## ">소제목</button><button type="button" data-line="### ">작은 제목</button><button type="button" data-line="> ">인용문</button><button type="button" data-line="- ">글머리</button><button type="button" data-line="1. ">번호 목록</button><button type="button" id="richLink">링크</button>
+          </div>
           <textarea
             id="body"
+            spellcheck="true"
             required
             style="min-height:340px"
             placeholder="취재한 내용을 문단별로 작성해 주세요."
           >${esc(a?.body || '')}</textarea>
 
-          <div class="actions" style="margin-top:10px">
+          <div class="actions" style="margin-top:10px"><span id="charCount" class="small muted" aria-live="polite"></span><button class="btn secondary small" type="button" id="spellHelp">맞춤법 확인 방법</button><button class="btn secondary small" type="button" id="mobilePreview">모바일 미리보기</button>
             <button
               class="btn secondary"
               type="button"
@@ -393,6 +404,35 @@ export function editor(id) {
   };
 
   const t = $('#body');
+  const apply = (before,after=before,line=false) => {
+    const start=t.selectionStart,end=t.selectionEnd,selected=t.value.slice(start,end);
+    if(line){
+      const beginning=t.value.lastIndexOf('\\n',start-1)+1;
+      t.setRangeText(before,beginning,beginning,'preserve');
+      t.setSelectionRange(start+before.length,end+before.length);
+    } else {
+      t.setRangeText(before+selected+after,start,end,'select');
+      t.setSelectionRange(start+before.length,end+before.length+selected.length);
+    }
+    t.focus();t.dispatchEvent(new Event('input',{bubbles:true}));
+  };
+  document.querySelectorAll('[data-wrap]').forEach(b=>b.onclick=()=>apply(b.dataset.wrap));
+  document.querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>apply(b.dataset.line,'',true));
+  $('#richSize').onchange=ev=>{if(ev.target.value)apply('[[크기:'+ev.target.value+']]','[[/크기]]');ev.target.value='';};
+  $('#richColor').onchange=ev=>{if(ev.target.value)apply('[[색:'+ev.target.value+']]','[[/색]]');ev.target.value='';};
+  $('#richLink').onclick=()=>{
+    const url=prompt('링크 주소를 입력하세요 (https://로 시작)');
+    if(!url)return;
+    try{const u=new URL(url);if(u.protocol!=='https:')throw Error();apply('[',']('+u.href+')');}
+    catch{alert('https://로 시작하는 안전한 주소를 입력해 주세요.');}
+  };
+  $('#spellHelp').onclick=()=>alert('본문의 빨간 밑줄을 마우스 오른쪽 버튼으로 눌러 브라우저 맞춤법 제안을 확인하세요. 맞춤법 기능은 브라우저 설정에 따라 다릅니다.');
+  $('#mobilePreview').onclick=()=>{
+    const el=$('#bodyPreview');el.classList.toggle('rich-mobile');
+    $('#mobilePreview').textContent=el.classList.contains('rich-mobile')?'PC 미리보기':'모바일 미리보기';
+  };
+  const updateCount=()=>{$('#charCount').textContent='본문 '+countRichCharacters(t.value)+'자';};
+  t.addEventListener('input',updateCount);updateCount();
 
   t.addEventListener('click', rememberCursor);
   t.addEventListener('keyup', rememberCursor);
@@ -420,6 +460,7 @@ export function editor(id) {
 
   offerDraft(a);
   renderPreview();
+  $('#charCount').textContent = '본문 ' + countRichCharacters(t.value) + '자';
 }
 
 // 이전에 작성하던 글을 자동으로 복원한다.
