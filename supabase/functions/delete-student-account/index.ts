@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
 
     if (
       !student ||
-      !["reader", "reporter"].includes(student.role) ||
+      !["reader", "reporter", "teacher_admin"].includes(student.role) ||
       student.is_super_admin === true ||
       student.deleted_at != null
     ) {
